@@ -1,0 +1,33 @@
+name: "Psalm PHP checks"
+
+on:
+    pull_request:
+        paths:
+            - "**.php"
+            - "psalm.xml"
+            - ".psalm/baseline.xml"
+            - ".github/workflows/psalm.yaml"
+    push:
+        paths:
+            - "**.php"
+            - "psalm.xml"
+            - ".psalm/baseline.xml"
+            - ".github/workflows/psalm.yaml"
+
+jobs:
+    psalm:
+        name: Psalm
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+            -   uses: actions/checkout@master
+
+            -   name: Psalm
+                uses: psalm/psalm-github-actions@2.3.0
+                with:
+                    args: --shepherd
+                    composer_require_dev: true
+                    composer_ignore_platform_reqs: true

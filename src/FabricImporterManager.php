@@ -1,0 +1,161 @@
+<?php
+
+namespace Fastbolt\FabricImporter;
+
+use App\Entity\DwhSync;
+use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
+use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
+use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
+use Fastbolt\FabricImporter\Types\ImportConfiguration;
+use Fastbolt\FabricImporter\Types\ImportResult;
+use App\Repository\DwhSyncRepository;
+use Closure;
+use DateTime;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
+use Exception;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+
+readonly class FabricImporterManager
+{
+    /**
+     * @param ManagerRegistry                             $managerRegistry
+     * @param FabricImporter                              $importer
+     * @param DwhSyncRepository                           $syncRepository
+     * @param EntityManagerInterface                      $em
+     * @param ImportQueryProvider                         $queryProvider
+     * @param iterable<FabricImporterDefinitionInterface> $definitions
+     */
+    public function __construct(
+        private ManagerRegistry $managerRegistry,
+        private FabricImporter $importer,
+        private DwhSyncRepository $syncRepository,
+        private EntityManagerInterface $em,
+        private ImportQueryProvider $queryProvider,
+        #[AutowireIterator('fastbolt.fabric_importer')]
+        private iterable $definitions = []
+    ) {
+    }
+
+    /**
+     * @param ImportConfiguration $importConfig
+     * @param Closure             $statusCallback
+     * @param Closure             $errorCallback
+     * @param Closure             $warningCallback
+     *
+     * @return ImportResult[]
+     * @throws ImporterDependencyException
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function import(
+        ImportConfiguration $importConfig,
+        Closure $statusCallback,
+        Closure $errorCallback,
+        Closure $warningCallback
+    ): array {
+        $type = $importConfig->getType();
+        if (!$type) {
+            throw new Exception("Name of the import is required, a complete import is currently not supported.");
+        }
+
+        $found = false;
+        $definition = null;
+        foreach ($this->definitions as $definition) {
+            if ($type === $definition->getName()) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            throw new ImporterDefinitionNotFoundException($type);
+        }
+
+        $this->checkForDependedImports($definition);
+
+        $offset         = 0;
+        $isFirstTry     = true;
+        $syncDate       = new DateTime();
+        $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
+        $connection     = $this->managerRegistry->getConnection('fabric');
+        $importResult   = new ImportResult($definition);
+        while (true) {
+            ['parameters' => $parameters, 'query' => $query]
+                = $this->queryProvider->buildQuery($definition, $offset, $lastImportDate);
+
+            /** @var Connection $connection */
+            $importedData = $connection
+                ->executeQuery($query, $parameters)
+                ->fetchAllAssociative();
+
+            if (!$importedData && $isFirstTry) {
+                $errorCallback(new Exception("Received data is empty for import of '$type'"));
+                break;
+            } elseif (!$importedData && !$isFirstTry) {
+                break; //all data exhausted, we're done
+            } else {
+                $isFirstTry = false;
+            }
+
+            $this->importer->import(
+                $definition,
+                $importedData,
+                $importConfig,
+                $importResult,
+                $statusCallback,
+                $errorCallback,
+                $warningCallback
+            );
+            $offset = $definition->getDataBatchSize() + $offset;
+        }
+
+        if ($importConfig->isDevMode() === false) {
+            $this->saveSyncEntry($type, $syncDate);
+        }
+
+        return [$importResult];
+    }
+
+    private function saveSyncEntry(string $type, DateTime $date): void {
+        $syncEntry = $this->syncRepository->find($type);
+        if (!$syncEntry) {
+            $syncEntry = new DwhSync();
+            $syncEntry->setType($type);
+        }
+        $syncEntry->setLoadedAt($date);
+        $this->em->persist($syncEntry);
+        $this->em->flush();
+    }
+
+    /**
+     * @param mixed $definition
+     *
+     * @return void
+     * @throws ImporterDependencyException
+     */
+    private function checkForDependedImports(mixed $definition): void
+    {
+        $dependencies = $definition->getImportDependencies();
+        $syncs        = $this->syncRepository->findAll();
+        foreach ($dependencies as $dep) {
+            foreach ($syncs as $sync) {
+                if ($sync->getType() !== $dep) {
+                    continue;
+                }
+
+                $threshold = new DateTime('-1 hour');
+                if ($sync->getLoadedAt() && $sync->getLoadedAt() > $threshold) {
+                    continue 2;
+                }
+
+                throw new ImporterDependencyException(
+                    $definition->getName(),
+                    $sync->getType(),
+                    $sync->getLoadedAt()
+                );
+            }
+        }
+    }
+}

@@ -1,0 +1,247 @@
+<?php
+
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Fastbolt\FabricImporter;
+
+use Fastbolt\FabricImporter\Exceptions\DataModifierException;
+use Fastbolt\FabricImporter\Exceptions\FieldConverterException;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
+use Fastbolt\FabricImporter\Providers\SaveQueryProvider;
+use Fastbolt\FabricImporter\Types\ImportConfiguration;
+use Fastbolt\FabricImporter\Types\ImportResult;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
+use Exception;
+use Throwable;
+
+/**
+ * Possible issues:
+ *  - The targetField in the FabricJoinSelect entity is also used as alias in the select, which could(?) cause problems
+ */
+
+/**
+ * @template T
+ */
+class FabricImporter
+{
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param SaveQueryProvider      $queryProvider
+     */
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly SaveQueryProvider $queryProvider
+    ) {
+    }
+
+    /**
+     * @param FabricImporterDefinition<T> $definition
+     * @param array<string, mixed>        $data
+     * @param ImportConfiguration         $importConfig
+     * @param callable                    $statusCallback
+     * @param callable                    $errorCallback
+     * @param callable                    $warningCallback
+     *
+     * @return ImportResult
+     */
+    public function import(
+        FabricImporterDefinitionInterface $definition,
+        array $data,
+        ImportConfiguration $importConfig,
+        ImportResult $importResult,
+        callable $statusCallback,
+        callable $errorCallback,
+        callable $warningCallback
+    ): ImportResult {
+        /** @var EntityRepository $repository */
+        try {
+            $flushInterval = $definition->getFlushInterval();
+
+            //data formatting
+            if ($importConfig->isDevMode()) {
+                foreach ($data as &$i) {
+                    $removedFields = $this->reduceItemToImportedFields($definition, $i);
+                }
+            }
+
+            $this->escapeData($data);
+            $this->applyModifierFunction($definition, $data);
+            $this->applyFieldConverters($definition, $data, $importResult, $warningCallback);
+            $this->applyDefaultValues($definition, $data);
+
+            $conn = $this->entityManager->getConnection();
+            $conn->beginTransaction();
+            $counter = 0;
+            foreach ($data as $item) {
+                $counter++;
+                $updateSuccessful = false;
+                if ($definition->getAllowUpdate()) {
+                    $uQuery = $this->queryProvider->getUpdateQuery($definition, $item);
+
+                    $stmt    = $conn->prepare($uQuery);
+                    $uResult = $stmt->executeQuery([]); //TODO parameterize
+                    $updateSuccessful = $uResult->rowCount() !== 0;
+                }
+
+                //insert if update failed
+                if (!$updateSuccessful) {
+                    $iQuery = $this->queryProvider->getInsertQuery($definition, $item);
+                    $stmt   = $conn->prepare($iQuery);
+                    $stmt->executeQuery([]);
+                }
+
+                if ($counter >= $flushInterval) {
+                    $conn->commit();
+                    $conn->beginTransaction();
+                    $counter = 0;
+                }
+
+                $importResult->increasesuccess();
+                $statusCallback();
+            }
+
+            $conn->commit();
+        } catch (Throwable $exception) {
+            $errorCallback($exception);
+        }
+
+
+        //TODO check if i still need this
+//        $archivingResult = $sourceDefinition->getArchivingStrategy()
+//                                            ->archive($sourceDefinition);
+//        $result->setArchivingResult($archivingResult);
+
+        return $importResult;
+    }
+
+    /**
+     * @throws DataModifierException
+     */
+    private function applyModifierFunction(
+        FabricImporterDefinitionInterface $definition,
+        array &$data
+    ): void {
+        foreach  ($data as &$item) {
+            try {
+                $item = $definition->modifyItem($item);
+            } catch (Throwable $e) {
+                throw new DataModifierException($definition->getName(), $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array                             $items
+     * @param ImportResult                      $importResult
+     * @param callable                          $warningCallback
+     *
+     * @return void
+     * @throws FieldConverterException
+     */
+    private function applyFieldConverters(
+        FabricImporterDefinitionInterface $definition,
+        array &$items,
+        ImportResult $importResult,
+        callable $warningCallback
+    ): void {
+        $converters = $definition->getFieldConverters();
+
+        try {
+            foreach ($converters as $extField => $conv) {
+                foreach ($items as $i => &$item) {
+                    if (!array_key_exists($extField, $item)) {
+                        throw new Exception("Converter found for field '$extField', but this field does not exist in the received data. Use the fields of the incoming data for converter names.");
+                    }
+
+                    try {
+                        $item[$extField] = $conv($item[$extField], $item);
+                    } catch (Throwable $e) {
+                        $importResult->increaseErrors();
+                        $warningCallback(
+                            new FieldConverterException(
+                                $definition->getName(),
+                                $extField,
+                                $e->getMessage()
+                            )
+                        );
+                        unset($items[$i]);
+                    }
+                }
+            }
+        } catch (Throwable $e) {
+            throw new FieldConverterException($definition->getName(), $extField, $e->getMessage());
+        }
+    }
+
+    private function applyDefaultValues(
+        FabricImporterDefinitionInterface $definition,
+        array &$data
+    ): void {
+        foreach ($definition->getDefaultValuesForUpdate() as $key => $default) {
+            foreach ($data as &$item) {
+                if (!array_key_exists($key, $item)) {
+                    $item[$key] = $default;
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes the fields from imported items that are not needed for the import
+     *
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array                             $item
+     *
+     * @return array<int, string>
+     */
+    private function reduceItemToImportedFields(
+        FabricImporterDefinitionInterface $definition,
+        array &$item
+    ): array {
+        $removedFields = [];
+        $joinFields = $definition->getJoinedFields();
+
+        foreach ($item as $extField => $field) {
+            if (array_key_exists($extField, $definition->getFieldNameMapping())) {
+                continue;
+            }
+
+            if (array_key_exists($extField, $definition->getIdentifierMapping())) {
+                continue;
+            }
+
+            if (in_array($extField, $joinFields)) {
+                continue;
+            }
+
+            $removedFields[] = $extField;
+            unset($item[$extField]);
+        }
+
+        return $removedFields;
+    }
+
+    /**
+     * Escapes all strings in $data for sql safety
+     *
+     * @param array $data
+     *
+     * @return void
+     */
+    private function escapeData(array &$data): void {
+        foreach ($data as &$item) {
+            foreach ($item as $key => $value) {
+                if (is_string($value)) {
+                    $item[$key] = addslashes($value);
+                }
+            }
+        }
+    }
+}
