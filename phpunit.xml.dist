@@ -6,7 +6,7 @@
          verbose="true"
          stopOnError="true"
          stopOnFailure="true"
-         forceCoversAnnotation="true">
+>
 
     <coverage>
         <include>
