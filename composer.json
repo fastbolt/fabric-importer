@@ -64,12 +64,6 @@
     "preferred-install": "dist",
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
-    },
-    "audit": {
-        "ignore": [
-            "PKSA-365x-2zjk-pt47"
-        ],
-        "block-insecure" : false
     }
   },
   "prefer-stable": true
