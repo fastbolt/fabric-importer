@@ -9,25 +9,26 @@
 namespace Fastbolt\FabricImporter\Tests\Events;
 
 use DateTime;
-use Exception;
-use Fastbolt\FabricImporter\Events\ImportFailureEvent;
+use Fastbolt\FabricImporter\Events\ImportSuccessEvent;
 use Fastbolt\FabricImporter\Tests\_Helpers\DummyImporterDefinition;
+use Fastbolt\FabricImporter\Types\ImportResult;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers("\Fastbolt\FabricImporter\Events\ImportFailureEvent")
- */
-class ImportFailureEventTest extends TestCase
+class ImportSuccessEventTest extends TestCase
 {
     public function testGetters(): void
     {
         $definition = new DummyImporterDefinition();
         $date = new DateTime();
-        $ex = new Exception("Test");
-        $event = new ImportFailureEvent($definition, $date, $ex);
+        $importResult = new ImportResult($definition);
+        $event = new ImportSuccessEvent(
+            $definition,
+            $date,
+            $importResult
+        );
 
         self::assertSame($definition, $event->getDefinition(), 'Event definition not returned correctly.');
         self::assertSame($date, $event->getImportStart(), 'Import start not returned correctly');
-        self::assertEquals('Test', $event->getException()->getMessage(), 'Event message not correct');
+        self::assertSame($importResult, $event->getImportResult(), 'Import result not returned correctly');
     }
 }
