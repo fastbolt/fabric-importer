@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Fastbolt\FabricImporter\Entity;
+
+use Fastbolt\FabricImporter\Repository\DwhSyncRepository;
+use DateTime;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: DwhSyncRepository::class)]
+#[ORM\Table(name: 'dwh_syncs')]
+class DwhSync
+{
+    #[ORM\Id]
+    #[ORM\Column(length: 255)]
+    #[ORM\GeneratedValue(strategy: 'NONE')]
+    private ?string $type = null;
+
+    #[ORM\Column]
+    private ?DateTime $loaded_at = null;
+
+    /**
+     * @return string|null
+     */
+    public function getType(): ?string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function setType(string $type): static
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTime|null
+     */
+    public function getLoadedAt(): ?DateTime
+    {
+        return $this->loaded_at;
+    }
+
+    /**
+     * @param DateTime $loaded_at
+     *
+     * @return $this
+     */
+    public function setLoadedAt(DateTime $loaded_at): static
+    {
+        $this->loaded_at = $loaded_at;
+
+        return $this;
+    }
+}
