@@ -8,6 +8,8 @@
 
 namespace Fastbolt\FabricImporter;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Fastbolt\FabricImporter\Exceptions\DataModifierException;
 use Fastbolt\FabricImporter\Exceptions\FieldConverterException;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
@@ -15,9 +17,6 @@ use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterfac
 use Fastbolt\FabricImporter\Providers\SaveQueryProvider;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
-use Exception;
 use Throwable;
 
 /**
@@ -25,9 +24,6 @@ use Throwable;
  *  - The targetField in the FabricJoinSelect entity is also used as alias in the select, which could(?) cause problems
  */
 
-/**
- * @template T
- */
 class FabricImporter
 {
     /**
@@ -41,12 +37,13 @@ class FabricImporter
     }
 
     /**
-     * @param FabricImporterDefinition<T> $definition
-     * @param array<string, mixed>        $data
-     * @param ImportConfiguration         $importConfig
-     * @param callable                    $statusCallback
-     * @param callable                    $errorCallback
-     * @param callable                    $warningCallback
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<int, array<string, mixed>>  $data
+     * @param ImportConfiguration               $importConfig
+     * @param ImportResult                      $importResult
+     * @param callable                          $statusCallback
+     * @param callable                          $errorCallback
+     * @param callable                          $warningCallback
      *
      * @return ImportResult
      */
@@ -59,7 +56,6 @@ class FabricImporter
         callable $errorCallback,
         callable $warningCallback
     ): ImportResult {
-        /** @var EntityRepository $repository */
         try {
             $flushInterval = $definition->getFlushInterval();
 
@@ -121,13 +117,17 @@ class FabricImporter
     }
 
     /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<int, array<string, mixed>>  $data
+     *
+     * @return void
      * @throws DataModifierException
      */
     private function applyModifierFunction(
         FabricImporterDefinitionInterface $definition,
         array &$data
     ): void {
-        foreach  ($data as &$item) {
+        foreach ($data as &$item) {
             try {
                 $item = $definition->modifyItem($item);
             } catch (Throwable $e) {
@@ -138,7 +138,7 @@ class FabricImporter
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array                             $items
+     * @param array<int, array<string,mixed>> $items
      * @param ImportResult                      $importResult
      * @param callable                          $warningCallback
      *
@@ -180,6 +180,12 @@ class FabricImporter
         }
     }
 
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<int, array<string,mixed>>    $data
+     *
+     * @return void
+     */
     private function applyDefaultValues(
         FabricImporterDefinitionInterface $definition,
         array &$data
@@ -197,7 +203,7 @@ class FabricImporter
      * Removes the fields from imported items that are not needed for the import
      *
      * @param FabricImporterDefinitionInterface $definition
-     * @param array                             $item
+     * @param array<string, mixed>              $item
      *
      * @return array<int, string>
      */
@@ -231,11 +237,12 @@ class FabricImporter
     /**
      * Escapes all strings in $data for sql safety
      *
-     * @param array $data
+     * @param array<int, array<string, mixed>> $data
      *
      * @return void
      */
-    private function escapeData(array &$data): void {
+    private function escapeData(array &$data): void
+    {
         foreach ($data as &$item) {
             foreach ($item as $key => $value) {
                 if (is_string($value)) {

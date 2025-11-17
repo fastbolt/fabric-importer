@@ -1,7 +1,14 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter;
 
+use Doctrine\DBAL\Exception;
 use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\Exceptions\NoDataReceivedException;
@@ -23,44 +30,63 @@ use Throwable;
 )]
 class ImportFromDWHCommand extends Command
 {
+    /**
+     * @param FabricImporterManager $importManager
+     */
     public function __construct(
         private readonly FabricImporterManager $importManager
-    )
-    {
+    ) {
         parent::__construct();
     }
 
+    /**
+     * @return void
+     */
     public function configure(): void
     {
         $this
-            ->addArgument('type', InputArgument::OPTIONAL, 'Type to import', '')
+            ->addArgument('type', InputArgument::OPTIONAL, 'The import which you want to execute', '')
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode');
     }
 
-    private function formatErrors(?array $errors, ?string $default = null): string
-    {
-        $message = "SQL Error - Error information:\n";
+    /**
+     * @param array<string, mixed>|null  $errors
+     * @param string|null $default
+     *
+     * @return string
+     */
+//    private function formatErrors(?array $errors, ?string $default = null): string
+//    {
+//        $message = "SQL Error - Error information:\n";
+//
+//        if (!empty($errors)) {
+//            foreach ($errors as $error) {
+//                $message .= '\nSQLSTATE: ' . $error['SQLSTATE'];
+//                $message .= '\nCode: ' . $error['code'];
+//                $message .= '\nMessage: ' . $error['message'];
+//            }
+//        } else {
+//            $message .= $default ?? "No information\n";
+//        }
+//
+//        return $message;
+//    }
 
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                $message .= '\nSQLSTATE: '. $error['SQLSTATE'];
-                $message .= '\nCode: '. $error['code'];
-                $message .= '\nMessage: '. $error['message'];
-            }
-        } else {
-            $message .= $default ?? "No information\n";
-        }
-
-        return $message;
-    }
-
-
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws Throwable
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $type = $input->getArgument('type');
-        $isDev = $input->getOption('dev');
+        /** @var string $type */
+        $type  = $input->getArgument('type');
+        $isDev = (bool) $input->getOption('dev');
 
         try {
             $bar = new ProgressBar($output);
@@ -103,16 +129,14 @@ class ImportFromDWHCommand extends Command
             );
             $bar->finish();
 
-            [$headers, $rows] = $this->getResultTable($results);
+            $table = $this->getResultTable($results);
 
             $io->newLine();
             $io->table(
-                $headers,
-                $rows
+                $table['headers'],
+                $table['rows']
             );
-        } catch (
-            ImporterDefinitionNotFoundException|ImporterDependencyException $exception
-        ) {
+        } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
             $io->newLine(2);
             $io->error($exception->getMessage());
 
@@ -127,7 +151,11 @@ class ImportFromDWHCommand extends Command
     /**
      * @param ImportResult[] $results
      *
-     * @return array
+     * @return array{
+     *     headers: array<int, string>,
+     *     rows: array<int<0, max>,
+     * array{string, int, int}>
+     * }
      */
     private function getResultTable(array $results): array
     {
@@ -142,6 +170,6 @@ class ImportFromDWHCommand extends Command
             ];
         }
 
-        return [$headers, $rows];
+        return ['headers' => $headers, 'rows' => $rows];
     }
 }

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter\ImporterDefinitions;
 
 use Fastbolt\FabricImporter\Types\FabricTableJoin;
@@ -22,8 +28,11 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     /**
      * @inheritDoc
      */
-    abstract function getName(): string;
+    abstract public function getName(): string;
 
+    /**
+     * @inheritDoc
+     */
     public function getTargetTable(): string
     {
         return $this->getName();
@@ -43,11 +52,6 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     public function getDataBatchSize(): int
     {
         return 1000;
-    }
-
-    public function getFlushInterval(): int
-    {
-        return $this->getDataBatchSize();
     }
 
     /**
@@ -97,7 +101,7 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     {
         $fields = [];
         foreach ($this->tableJoins as $join) {
-            foreach($join->getSelects() as $jSelect) {
+            foreach ($join->getSelects() as $jSelect) {
                 $fields[] = $jSelect->getTargetField();
             }
         }
@@ -145,6 +149,9 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
         return [];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function modifyItem(array $item): array
     {
         return $item;

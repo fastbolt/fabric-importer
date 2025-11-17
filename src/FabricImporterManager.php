@@ -1,24 +1,31 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter;
 
-use App\Entity\DwhSync;
-use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
-use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
-use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
-use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
-use Fastbolt\FabricImporter\Types\ImportConfiguration;
-use Fastbolt\FabricImporter\Types\ImportResult;
-use App\Repository\DwhSyncRepository;
 use Closure;
 use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use Fastbolt\FabricImporter\Entity\DwhSync;
+use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
+use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
+use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
+use Fastbolt\FabricImporter\Repository\DwhSyncRepository;
+use Fastbolt\FabricImporter\Types\ImportConfiguration;
+use Fastbolt\FabricImporter\Types\ImportResult;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
-readonly class FabricImporterManager
+class FabricImporterManager
 {
     /**
      * @param ManagerRegistry                             $managerRegistry
@@ -73,6 +80,7 @@ readonly class FabricImporterManager
             throw new ImporterDefinitionNotFoundException($type);
         }
 
+        /** @var FabricImporterDefinitionInterface $definition */
         $this->checkForDependedImports($definition);
 
         $offset         = 0;
@@ -82,22 +90,23 @@ readonly class FabricImporterManager
         $connection     = $this->managerRegistry->getConnection('fabric');
         $importResult   = new ImportResult($definition);
         while (true) {
-            ['parameters' => $parameters, 'query' => $query]
+            ['query' => $query, 'parameters' => $parameters]
                 = $this->queryProvider->buildQuery($definition, $offset, $lastImportDate);
 
             /** @var Connection $connection */
+            /** @var string $query */
+            /** @var array<string, mixed> $parameters */
             $importedData = $connection
                 ->executeQuery($query, $parameters)
                 ->fetchAllAssociative();
 
-            if (!$importedData && $isFirstTry) {
-                $errorCallback(new Exception("Received data is empty for import of '$type'"));
+            if (!$importedData) {
+                if ($isFirstTry) {
+                    $errorCallback(new Exception("Received data is empty for import of '$type'"));
+                }
                 break;
-            } elseif (!$importedData && !$isFirstTry) {
-                break; //all data exhausted, we're done
-            } else {
-                $isFirstTry = false;
             }
+            $isFirstTry = false;
 
             $this->importer->import(
                 $definition,
@@ -118,7 +127,14 @@ readonly class FabricImporterManager
         return [$importResult];
     }
 
-    private function saveSyncEntry(string $type, DateTime $date): void {
+    /**
+     * @param string   $type
+     * @param DateTime $date
+     *
+     * @return void
+     */
+    private function saveSyncEntry(string $type, DateTime $date): void
+    {
         $syncEntry = $this->syncRepository->find($type);
         if (!$syncEntry) {
             $syncEntry = new DwhSync();
@@ -130,12 +146,12 @@ readonly class FabricImporterManager
     }
 
     /**
-     * @param mixed $definition
+     * @param FabricImporterDefinitionInterface $definition
      *
      * @return void
      * @throws ImporterDependencyException
      */
-    private function checkForDependedImports(mixed $definition): void
+    private function checkForDependedImports(FabricImporterDefinitionInterface $definition): void
     {
         $dependencies = $definition->getImportDependencies();
         $syncs        = $this->syncRepository->findAll();

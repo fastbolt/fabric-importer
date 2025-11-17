@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter\ImporterDefinitions;
 
 use Fastbolt\FabricImporter\Types\FabricTableJoin;
@@ -107,33 +113,33 @@ interface FabricImporterDefinitionInterface
      *
      * @return FabricTableJoin[]
      */
-    function getTableJoins(): array;
+    public function getTableJoins(): array;
 
     /**
      * Returns the aliased name of all fields added by the join
      *
      * @return string[]
      */
-    function getJoinedFields(): array;
+    public function getJoinedFields(): array;
 
     /**
      * Returns a fieldName => value array of default values, that will be added to the UPDATE statement.
      *
-     * @return array
+     * @return array<string, string|int|null>
      */
-    function getDefaultValuesForUpdate(): array;
+    public function getDefaultValuesForUpdate(): array;
 
     /**
      * Returns a fieldName => value array of default values, that will be added to the INSERT statement.
      *
-     * @return array
+     * @return array<string, string|int|null>
      */
-    function getDefaultValuesForInsert(): array;
+    public function getDefaultValuesForInsert(): array;
 
     /**
      * If false, only Inserts will be attempted.
      */
-    function getAllowUpdate(): bool;
+    public function getAllowUpdate(): bool;
 
     /**
      * TODO we could try to make the importers with dependencies only import items that have
@@ -144,7 +150,7 @@ interface FabricImporterDefinitionInterface
      *
      * @return array<int, string>
      */
-    function getImportDependencies(): array;
+    public function getImportDependencies(): array;
 
     /**
      * Returns additional filters applied to the query, like "WHERE <filter_content>"
@@ -156,9 +162,9 @@ interface FabricImporterDefinitionInterface
     /**
      * A method which is applied to the whole received item before anything else. Must return the whole item.
      *
-     * @param array $item
+     * @param array<string, mixed> $item
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function modifyItem(array $item): array;
 }

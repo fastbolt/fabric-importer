@@ -2,7 +2,7 @@
 
 namespace Fastbolt\FabricImporter\Types;
 
-readonly class FabricJoinedSelect
+class FabricJoinedSelect
 {
     /**
      * @param string      $field           The field on the joined table
@@ -14,6 +14,9 @@ readonly class FabricJoinedSelect
     ) {
     }
 
+    /**
+     * @return string
+     */
     public function getField(): string
     {
         return $this->field;

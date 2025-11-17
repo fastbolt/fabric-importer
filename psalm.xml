@@ -25,6 +25,9 @@
                 <directory name="tests/"/>
             </errorLevel>
         </PropertyNotSetInConstructor>
+        <RiskyTruthyFalsyComparison>
+            <errorLevel type="suppress" />
+        </RiskyTruthyFalsyComparison>
     </issueHandlers>
 
     <fileExtensions>

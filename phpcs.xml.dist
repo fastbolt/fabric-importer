@@ -58,6 +58,11 @@
 	    </properties>
 	</rule>
 
+    <!-- Don't check the licence code blocks -->
+	<rule ref="Spryker.Commenting.FileDocBlock.FileDocBlockWrong">
+        <severity>0</severity>
+    </rule>
+
     <rule ref="Spryker.Commenting.DocBlock">
         <exclude-pattern>tests/</exclude-pattern>
     </rule>

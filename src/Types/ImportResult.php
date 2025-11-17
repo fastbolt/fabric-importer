@@ -1,19 +1,12 @@
 <?php
 
-/**
- * Copyright © Fastbolt Schraubengroßhandels GmbH.
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Fastbolt\FabricImporter\Types;
 
-
-use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 
 class ImportResult
 {
-    private FabricImporterDefinition $definition;
+    private FabricImporterDefinitionInterface $definition;
 
     /**
      * @var int
@@ -25,12 +18,18 @@ class ImportResult
      */
     private int $errors = 0;
 
-    public function __construct(FabricImporterDefinition $definition)
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     */
+    public function __construct(FabricImporterDefinitionInterface $definition)
     {
         $this->definition = $definition;
     }
 
-    public function getDefinition(): FabricImporterDefinition
+    /**
+     * @return FabricImporterDefinitionInterface
+     */
+    public function getDefinition(): FabricImporterDefinitionInterface
     {
         return $this->definition;
     }

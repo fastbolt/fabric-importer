@@ -2,7 +2,7 @@
 
 namespace Fastbolt\FabricImporter\Types;
 
-readonly class FabricTableJoin
+class FabricTableJoin
 {
     /**
      * @param string                            $table
@@ -20,6 +20,9 @@ readonly class FabricTableJoin
     ) {
     }
 
+    /**
+     * @return string
+     */
     public function getJoinStatement(): string
     {
         return "$this->joinMode JOIN $this->table $this->tableAlias 
@@ -36,6 +39,9 @@ readonly class FabricTableJoin
         return $this->selects;
     }
 
+    /**
+     * @return string
+     */
     public function getTableAlias(): string
     {
         return $this->tableAlias;

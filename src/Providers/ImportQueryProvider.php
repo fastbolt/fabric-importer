@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter\Providers;
 
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
@@ -7,6 +13,13 @@ use DateTimeInterface;
 
 class ImportQueryProvider
 {
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param int                               $offset
+     * @param DateTimeInterface|null            $lastImportDate
+     *
+     * @return array<string, string|array<string, mixed>>
+     */
     public function buildQuery(
         FabricImporterDefinitionInterface $definition,
         int $offset,

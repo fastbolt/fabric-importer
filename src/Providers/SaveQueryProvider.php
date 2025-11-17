@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Copyright © Fastbolt Schraubengroßhandels GmbH.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace Fastbolt\FabricImporter\Providers;
 
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
@@ -10,7 +16,14 @@ use OutOfRangeException;
  */
 class SaveQueryProvider
 {
-    public function getUpdateQuery($definition, $item): string {
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<string, int|string|null>         $item
+     *
+     * @return string
+     */
+    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): string
+    {
         $table = $definition->getTargetTable();
         $set   = $this->getSetter($definition, $item);
         $where = $this->getWhere($definition, $item);
@@ -18,7 +31,13 @@ class SaveQueryProvider
         return "UPDATE $table SET $set $where;";
     }
 
-    private function getSetter(FabricImporterDefinitionInterface $definition, $item): string
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<string, int|string|null>         $item
+     *
+     * @return string
+     */
+    private function getSetter(FabricImporterDefinitionInterface $definition, array $item): string
     {
         $fieldMapping = $definition->getFieldNameMapping();
         $joinedFields = $definition->getJoinedFields();
@@ -52,7 +71,7 @@ class SaveQueryProvider
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, string>             $item
+     * @param array<string, int|string|null> $item
      *
      * @return string
      */
@@ -76,6 +95,12 @@ class SaveQueryProvider
         return $whereQuery;
     }
 
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<string, int|string|null>         $item
+     *
+     * @return string
+     */
     public function getInsertQuery(FabricImporterDefinitionInterface $definition, array $item): string
     {
         $table             = $definition->getTargetTable();
@@ -124,7 +149,12 @@ class SaveQueryProvider
         return "INSERT INTO $table ($columns) VALUES($values)";
     }
 
-    private function formatValueByType(mixed $value): mixed
+    /**
+     * @param int|string|null $value
+     *
+     * @return int|string
+     */
+    private function formatValueByType(int|string|null $value): int|string
     {
         if ($value === null) {
             return '(NULL)';
