@@ -17,7 +17,6 @@ use Exception;
 use Fastbolt\FabricImporter\Entity\DwhSync;
 use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
-use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
 use Fastbolt\FabricImporter\Repository\DwhSyncRepository;

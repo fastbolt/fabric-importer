@@ -12,7 +12,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Fastbolt\FabricImporter\Exceptions\DataModifierException;
 use Fastbolt\FabricImporter\Exceptions\FieldConverterException;
-use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Fastbolt\FabricImporter\Providers\SaveQueryProvider;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
