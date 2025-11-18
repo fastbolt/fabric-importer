@@ -54,10 +54,10 @@ class FabricImporterExtension extends Extension
                             'mappings' => [
                                 'FabricImporter' => [
                                     'is_bundle' => false,
-                                    'type'      => 'attribute',
-                                    'dir'       => __DIR__ . '/../Entity',
+                                    'dir'       => '%kernel.project_dir%/vendor/fastbolt/fabric-importer/src/Entity',
                                     'prefix'    => 'Fastbolt\\FabricImporter\\Entity',
                                     'alias'     => 'FabricImporter',
+                                    'type'      => 'attribute'
                                 ],
                             ],
                         ],
