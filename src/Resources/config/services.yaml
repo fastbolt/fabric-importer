@@ -1,0 +1,10 @@
+services:
+    Fastbolt\FabricImporter\Console\Command\ImportFromDWHCommand:
+        tags: [ 'console.command' ]
+        arguments:
+            $importManager: '@Fastbolt\FabricImporter\FabricImporterManager'
+
+    Fastbolt\FabricImporter\FabricImporterManager:
+        $managerRegistry: '@doctrine.orm.registry'
+        $importer: '@Fastbolt\FabricImporter\FabricImporter'
+        $importerDefinitions: !tagged fastbolt.fabric_importer.definition
