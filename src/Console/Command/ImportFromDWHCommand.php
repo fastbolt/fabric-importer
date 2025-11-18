@@ -27,7 +27,7 @@ use Throwable;
 
 #[AsCommand(
     name: 'fabric-importer:import',
-    description: 'WIP tests import from Fabric'
+    description: 'Imports table data from fabric.'
 )]
 class ImportFromDWHCommand extends Command
 {
