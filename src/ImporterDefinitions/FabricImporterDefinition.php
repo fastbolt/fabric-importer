@@ -57,6 +57,14 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     /**
      * @inheritDoc
      */
+    public function getFlushInterval(): int
+    {
+        return $this->getDataBatchSize();
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getFieldNameMapping(): array
     {
         return [];
