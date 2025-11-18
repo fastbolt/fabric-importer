@@ -15,7 +15,7 @@ services:
         $syncRepository: '@Fastbolt\FabricImporter\Repository\DwhSyncRepository'
         $em: '@doctrine.orm.entity_manager'
         $queryProvider: '@Fastbolt\FabricImporter\Providers\ImportQueryProvider'
-        $definitions: !tagged fastbolt.fabric_importer.definition
+        $definitions: !tagged fastbolt.fabric_importer
 
     Fastbolt\FabricImporter\FabricImporter:
         $entityManager: '@doctrine.orm.entity_manager'
