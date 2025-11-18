@@ -6,12 +6,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Fastbolt\FabricImporter;
+namespace Fastbolt\FabricImporter\Console\Command;
 
 use Doctrine\DBAL\Exception;
 use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\Exceptions\NoDataReceivedException;
+use Fastbolt\FabricImporter\FabricImporterManager;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
 use Symfony\Component\Console\Attribute\AsCommand;
