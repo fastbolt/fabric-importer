@@ -11,8 +11,8 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 class FabricImporterExtension extends Extension implements PrependExtensionInterface
 {
     /**
-     * @param array           $configs
-     * @param ContainerBuilder $container
+     * @param array<string, mixed> $configs
+     * @param ContainerBuilder     $container
      *
      * @return void
      * @throws \Exception
