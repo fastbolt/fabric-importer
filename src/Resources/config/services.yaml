@@ -5,6 +5,6 @@ services:
             $importManager: '@Fastbolt\FabricImporter\FabricImporterManager'
 
     Fastbolt\FabricImporter\FabricImporterManager:
-        $managerRegistry: '@doctrine.orm.registry'
+        $managerRegistry: '@doctrine'
         $importer: '@Fastbolt\FabricImporter\FabricImporter'
         $definitions: !tagged fastbolt.fabric_importer.definition
