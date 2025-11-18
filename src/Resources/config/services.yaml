@@ -8,3 +8,12 @@ services:
         $managerRegistry: '@doctrine'
         $importer: '@Fastbolt\FabricImporter\FabricImporter'
         $definitions: !tagged fastbolt.fabric_importer.definition
+
+    Fastbolt\FabricImporter\FabricImporter:
+        $entityManager: '@doctrine.orm.entity_manager'
+        $queryProvider: '@Fastbolt\FabricImporter\Providers\SaveQueryProvider'
+
+    Fastbolt\FabricImporter\Providers\SaveQueryProvider:
+    Fastbolt\FabricImporter\Providers\ImportQueryProvider:
+
+
