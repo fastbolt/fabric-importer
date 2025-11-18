@@ -5,9 +5,10 @@ namespace Fastbolt\FabricImporter\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class FabricImporterExtension extends Extension
+class FabricImporterExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * @param array           $configs
@@ -54,7 +55,7 @@ class FabricImporterExtension extends Extension
                             'mappings' => [
                                 'FabricImporter' => [
                                     'is_bundle' => false,
-                                    'dir'       => '%kernel.project_dir%/vendor/fastbolt/fabric-importer/src/Entity',
+                                    'dir' => __DIR__ . '/../Entity',
                                     'prefix'    => 'Fastbolt\\FabricImporter\\Entity',
                                     'alias'     => 'FabricImporter',
                                     'type'      => 'attribute'
