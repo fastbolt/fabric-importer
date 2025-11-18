@@ -1,0 +1,47 @@
+<?php
+
+namespace Fastbolt\FabricImporter\Console\Command;
+
+use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+#[AsCommand(
+    name: 'fabric-importer:init',
+    description: 'Set up for the use of the importer command.'
+)]
+class InitCommand extends Command
+{
+    /**
+     * @param EntityManagerInterface $entityManager
+     */
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager
+    ) {
+        parent::__construct();
+    }
+
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     * @throws Exception
+     */
+    public function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $query = "CREATE TABLE `dwh_syncs` (
+          `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `loaded_at` datetime NOT NULL,
+          PRIMARY KEY (`type`),
+          UNIQUE KEY `type` (`type`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+
+        $conn = $this->entityManager->getConnection();
+        return $conn->prepare($query)->executeStatement();
+    }
+}

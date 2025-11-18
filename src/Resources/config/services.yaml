@@ -1,4 +1,9 @@
 services:
+    Fastbolt\FabricImporter\Console\Command\InitCommand:
+        tags: [ 'console.command' ]
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+
     Fastbolt\FabricImporter\Console\Command\ImportFromDWHCommand:
         tags: [ 'console.command' ]
         arguments:
