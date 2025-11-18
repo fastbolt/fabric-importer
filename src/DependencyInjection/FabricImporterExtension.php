@@ -24,5 +24,6 @@ class FabricImporterExtension extends Extension
         );
 
         $loader->load('services.yaml');
+        $loader->load('doctrine.yaml');
     }
 }
