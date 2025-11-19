@@ -23,15 +23,15 @@ use Throwable;
  *  - The targetField in the FabricJoinSelect entity is also used as alias in the select, which could(?) cause problems
  */
 
-class FabricImporter
+readonly class FabricImporter
 {
     /**
      * @param EntityManagerInterface $entityManager
      * @param SaveQueryProvider      $queryProvider
      */
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly SaveQueryProvider $queryProvider
+        private EntityManagerInterface $entityManager,
+        private SaveQueryProvider $queryProvider
     ) {
     }
 
@@ -87,8 +87,8 @@ class FabricImporter
                 //insert if update failed
                 if (!$updateSuccessful) {
                     $iQuery = $this->queryProvider->getInsertQuery($definition, $item);
-                    $stmt   = $conn->prepare($iQuery);
-                    $stmt->executeQuery([]);
+                    $stmt   = $conn->prepare($iQuery->getQuery());
+                    $stmt->executeQuery($iQuery->getParameters());
                 }
 
                 if ($counter >= $flushInterval) {

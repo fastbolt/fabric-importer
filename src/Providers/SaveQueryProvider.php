@@ -9,6 +9,7 @@
 namespace Fastbolt\FabricImporter\Providers;
 
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
+use Fastbolt\FabricImporter\Types\Query;
 use OutOfRangeException;
 
 /**
@@ -99,10 +100,12 @@ class SaveQueryProvider
      * @param FabricImporterDefinitionInterface $definition
      * @param array<string, int|string|null>         $item
      *
-     * @return string
+     * @return Query
      */
-    public function getInsertQuery(FabricImporterDefinitionInterface $definition, array $item): string
+    public function getInsertQuery(FabricImporterDefinitionInterface $definition, array $item): Query
     {
+        $queryObj = new Query();
+
         $table             = $definition->getTargetTable();
         $fieldMapping      = $definition->getFieldNameMapping();
         $identifierMapping = $definition->getIdentifierMapping();
@@ -146,7 +149,16 @@ class SaveQueryProvider
         $columns = implode(', ', $columns);
         $values  = implode(', ', $values);
 
-        return "INSERT INTO $table ($columns) VALUES($values)";
+        $queryObj->setParameters([
+            'table' => $table,
+            'columns' => $columns,
+            'values' => $values
+                                 ]);
+
+        $query = "INSERT INTO :table (:columns) VALUES(:values)";
+        $queryObj->setQuery($query);
+
+        return $queryObj;
     }
 
     /**
