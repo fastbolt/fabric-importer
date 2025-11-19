@@ -33,17 +33,11 @@ services:
         tags: ['fastbolt.fabric_importer']
 ```
 
-Add this to your doctrine.yaml.
-```yaml
-doctrine:
-    orm:
-        mappings:
-            FabricImporter:
-                is_bundle: false
-                type: attribute
-                dir: '%kernel.project_dir%/vendor/fastbolt/fabric-importer/src/Entity'
-                prefix: 'Fastbolt\FabricImporter\Entity'
-                alias: FabricImporter
+Add your fabric-database's url to your environment.
+```text
+###< fastbolt/fabric-importer
+DATABASE_FABRIC_URL="sqlsrv://user@host.fabric.microsoft.com?serverVersion=12.0.2000.8&Encrypt=true&TrustServerCertificate=true&dbname=lake_silver&charset=&port=1433&driverOptions[Authentication]=ActiveDirectoryPassword&driverOptions[MultipleActiveResultSets]=0&driverOptions[Encrypt]=1&driverOptions[TrustServerCertificate]=1"
+###> fastbolt/fabric-importer
 ```
 
 Run this command to create the dwh_syncs table in your database.
