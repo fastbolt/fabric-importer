@@ -24,6 +24,16 @@ class DwhSync
     #[ORM\Column]
     private ?DateTime $loaded_at = null;
 
+
+    #[ORM\Column]
+    private int $execTimeSeconds = 0;
+
+    #[ORM\Column]
+    private int $successes = 0;
+
+    #[ORM\Column]
+    private int $failures = 0;
+
     /**
      * @return string|null
      */
@@ -62,5 +72,59 @@ class DwhSync
         $this->loaded_at = $loaded_at;
 
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExecTimeSeconds(): int
+    {
+        return $this->execTimeSeconds;
+    }
+
+    /**
+     * @param int $execTimeSeconds
+     *
+     * @return void
+     */
+    public function setExecTimeSeconds(int $execTimeSeconds): void
+    {
+        $this->execTimeSeconds = $execTimeSeconds;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSuccesses(): int
+    {
+        return $this->successes;
+    }
+
+    /**
+     * @param int $successes
+     *
+     * @return void
+     */
+    public function setSuccesses(int $successes): void
+    {
+        $this->successes = $successes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFailures(): int
+    {
+        return $this->failures;
+    }
+
+    /**
+     * @param int $failures
+     *
+     * @return void
+     */
+    public function setFailures(int $failures): void
+    {
+        $this->failures = $failures;
     }
 }

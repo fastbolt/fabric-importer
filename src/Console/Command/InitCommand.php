@@ -2,10 +2,11 @@
 
 namespace Fastbolt\FabricImporter\Console\Command;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -33,15 +34,31 @@ class InitCommand extends Command
      */
     public function execute(InputInterface $input, OutputInterface $output): int
     {
+        $conn = $this->entityManager->getConnection();
+        $this->createSyncTable($conn);
+
+        return 0;
+    }
+
+    /**
+     * @param Connection $conn
+     *
+     * @return void
+     * @throws Exception
+     */
+    private function createSyncTable(Connection $conn): void
+    {
         $query = "CREATE TABLE `dwh_syncs` (
           `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
           `loaded_at` datetime NOT NULL,
+          `exec_time_seconds` int NOT NULL,
+          `successes` int NOT NULL,
+          `failures` int NOT NULL,
           PRIMARY KEY (`type`),
           UNIQUE KEY `type` (`type`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
 
-        $conn = $this->entityManager->getConnection();
-        return $conn->prepare($query)->executeStatement();
+        $conn->prepare($query)->executeStatement();
     }
 }
