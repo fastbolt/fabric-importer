@@ -14,12 +14,12 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
-use Fastbolt\FabricImporter\Entity\DwhSync;
+use Fastbolt\FabricImporter\Entity\FabricSync;
 use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
-use Fastbolt\FabricImporter\Repository\DwhSyncRepository;
+use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
@@ -29,7 +29,7 @@ class FabricImporterManager
     /**
      * @param ManagerRegistry                             $managerRegistry
      * @param FabricImporter                              $importer
-     * @param DwhSyncRepository                           $syncRepository
+     * @param FabricSyncRepository                        $syncRepository
      * @param EntityManagerInterface                      $em
      * @param ImportQueryProvider                         $queryProvider
      * @param iterable<FabricImporterDefinitionInterface> $definitions
@@ -37,7 +37,7 @@ class FabricImporterManager
     public function __construct(
         private ManagerRegistry $managerRegistry,
         private FabricImporter $importer,
-        private DwhSyncRepository $syncRepository,
+        private FabricSyncRepository $syncRepository,
         private EntityManagerInterface $em,
         private ImportQueryProvider $queryProvider,
         #[AutowireIterator('fastbolt.fabric_importer')]
@@ -136,7 +136,7 @@ class FabricImporterManager
     {
         $syncEntry = $this->syncRepository->find($type);
         if (!$syncEntry) {
-            $syncEntry = new DwhSync();
+            $syncEntry = new FabricSync();
             $syncEntry->setType($type);
         }
         $syncEntry->setLoadedAt($date);

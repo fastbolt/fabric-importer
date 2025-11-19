@@ -8,13 +8,13 @@
 
 namespace Fastbolt\FabricImporter\Entity;
 
-use Fastbolt\FabricImporter\Repository\DwhSyncRepository;
+use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: DwhSyncRepository::class)]
-#[ORM\Table(name: 'dwh_syncs')]
-class DwhSync
+#[ORM\Entity(repositoryClass: FabricSyncRepository::class)]
+#[ORM\Table(name: 'fabric_syncs')]
+class FabricSync
 {
     #[ORM\Id]
     #[ORM\Column(length: 255)]

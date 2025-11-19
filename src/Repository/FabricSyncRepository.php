@@ -11,19 +11,19 @@ namespace Fastbolt\FabricImporter\Repository;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Fastbolt\FabricImporter\Entity\DwhSync;
+use Fastbolt\FabricImporter\Entity\FabricSync;
 
 /**
- * @extends ServiceEntityRepository<DwhSync>
+ * @extends ServiceEntityRepository<FabricSync>
  */
-class DwhSyncRepository extends ServiceEntityRepository
+class FabricSyncRepository extends ServiceEntityRepository
 {
     /**
      * @param ManagerRegistry $registry
      */
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, DwhSync::class);
+        parent::__construct($registry, FabricSync::class);
     }
 
     /**

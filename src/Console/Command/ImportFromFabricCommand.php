@@ -29,7 +29,7 @@ use Throwable;
     name: 'fabric-importer:import',
     description: 'Imports table data from fabric.'
 )]
-class ImportFromDWHCommand extends Command
+class ImportFromFabricCommand extends Command
 {
     /**
      * @param FabricImporterManager $importManager

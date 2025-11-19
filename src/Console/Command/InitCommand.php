@@ -48,7 +48,7 @@ class InitCommand extends Command
      */
     private function createSyncTable(Connection $conn): void
     {
-        $query = "CREATE TABLE `dwh_syncs` (
+        $query = "CREATE TABLE `fabric_syncs` (
           `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
           `loaded_at` datetime NOT NULL,
           `exec_time_seconds` int NOT NULL,
