@@ -40,7 +40,7 @@ DATABASE_FABRIC_URL="sqlsrv://user@host.fabric.microsoft.com?serverVersion=12.0.
 ###> fastbolt/fabric-importer
 ```
 
-Run this command to create the dwh_syncs table in your database.
+Run this command to create the fabric_syncs table in your database.
 ```console
 php bin/console fabric-importer:init
 ```

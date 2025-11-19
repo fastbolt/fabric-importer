@@ -120,26 +120,34 @@ class FabricImporterManager
         }
 
         if ($importConfig->isDevMode() === false) {
-            $this->saveSyncEntry($type, $syncDate);
+            $this->saveSyncEntry($type, $syncDate, $importResult);
         }
 
         return [$importResult];
     }
 
     /**
-     * @param string   $type
-     * @param DateTime $date
+     * @param string       $type
+     * @param DateTime     $startDate
+     * @param ImportResult $importResult
      *
      * @return void
      */
-    private function saveSyncEntry(string $type, DateTime $date): void
+    private function saveSyncEntry(string $type, DateTime $startDate, ImportResult $importResult): void
     {
         $syncEntry = $this->syncRepository->find($type);
         if (!$syncEntry) {
             $syncEntry = new FabricSync();
             $syncEntry->setType($type);
         }
-        $syncEntry->setLoadedAt($date);
+
+        $timePassed = (time() - $startDate->getTimestamp());
+        $syncEntry
+            ->setLoadedAt($startDate)
+            ->setSuccesses($importResult->getSuccess())
+            ->setFailures($importResult->getErrors())
+            ->setExecTimeSeconds($timePassed)
+        ;
         $this->em->persist($syncEntry);
         $this->em->flush();
     }

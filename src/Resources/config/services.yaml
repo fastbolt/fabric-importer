@@ -4,7 +4,7 @@ services:
         arguments:
             $entityManager: '@doctrine.orm.entity_manager'
 
-    Fastbolt\FabricImporter\Console\Command\ImportFromDWHCommand:
+    Fastbolt\FabricImporter\Console\Command\ImportFromFabricCommand:
         tags: [ 'console.command' ]
         arguments:
             $importManager: '@Fastbolt\FabricImporter\FabricImporterManager'
@@ -12,7 +12,7 @@ services:
     Fastbolt\FabricImporter\FabricImporterManager:
         $managerRegistry: '@doctrine'
         $importer: '@Fastbolt\FabricImporter\FabricImporter'
-        $syncRepository: '@Fastbolt\FabricImporter\Repository\DwhSyncRepository'
+        $syncRepository: '@Fastbolt\FabricImporter\Repository\FabricSyncRepository'
         $em: '@doctrine.orm.entity_manager'
         $queryProvider: '@Fastbolt\FabricImporter\Providers\ImportQueryProvider'
         $definitions: !tagged fastbolt.fabric_importer
@@ -24,7 +24,7 @@ services:
     Fastbolt\FabricImporter\Providers\SaveQueryProvider:
     Fastbolt\FabricImporter\Providers\ImportQueryProvider:
 
-    Fastbolt\FabricImporter\Repository\DwhSyncRepository:
+    Fastbolt\FabricImporter\Repository\FabricSyncRepository:
         $registry: '@doctrine'
 
 

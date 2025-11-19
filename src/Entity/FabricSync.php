@@ -103,11 +103,13 @@ class FabricSync
     /**
      * @param int $successes
      *
-     * @return void
+     * @return FabricSync
      */
-    public function setSuccesses(int $successes): void
+    public function setSuccesses(int $successes): self
     {
         $this->successes = $successes;
+
+        return $this;
     }
 
     /**
@@ -121,10 +123,12 @@ class FabricSync
     /**
      * @param int $failures
      *
-     * @return void
+     * @return FabricSync
      */
-    public function setFailures(int $failures): void
+    public function setFailures(int $failures): self
     {
         $this->failures = $failures;
+
+        return $this;
     }
 }
