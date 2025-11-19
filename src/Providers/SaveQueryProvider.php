@@ -21,15 +21,23 @@ class SaveQueryProvider
      * @param FabricImporterDefinitionInterface $definition
      * @param array<string, int|string|null>         $item
      *
-     * @return string
+     * @return Query
      */
-    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): string
+    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): Query
     {
-        $table = $definition->getTargetTable();
-        $set   = $this->getSetter($definition, $item);
-        $where = $this->getWhere($definition, $item);
+        $queryObj = new Query();
+        $queryObj->setParameters([
+            'table' => $definition->getTargetTable()
+        ]);
 
-        return "UPDATE $table SET $set $where;";
+        $set   = $this->getSetter($definition, $item, $queryObj);
+        $where = $this->getWhere($definition, $item, $queryObj);
+
+        $query = "UPDATE :table SET $set $where;";
+        $queryObj->setQuery($query);
+
+
+        return $queryObj;
     }
 
     /**
@@ -38,7 +46,7 @@ class SaveQueryProvider
      *
      * @return string
      */
-    private function getSetter(FabricImporterDefinitionInterface $definition, array $item): string
+    private function getSetter(FabricImporterDefinitionInterface $definition, array $item, Query $query): string
     {
         $fieldMapping = $definition->getFieldNameMapping();
         $joinedFields = $definition->getJoinedFields();
@@ -51,32 +59,36 @@ class SaveQueryProvider
                 in_array($prop, $joinedFields)
                 || array_key_exists($prop, $definition->getDefaultValuesForUpdate())
             ) {
-                $setter .= "$prop = $value, ";
+                $placeholder = ':' . $prop;
+                $setter .= "$prop = $placeholder, ";
+                $query->addParameters([$placeholder => $value]);
                 continue;
             }
 
-            //skipping identifiers (we dont want to update those) and fields, which are not in field-mapping
+            //skipping identifiers (we don't want to update those) and fields, which are not in field-mapping
             $field = $fieldMapping[$prop] ?? null;
             if (!$field) {
                 continue;
             }
 
-            //standard field
-            $setter .= "$field = $value, ";
+            //standard field, prefix placeholder because it might be that we use the same in WHERE
+            $placeholder = ':s_' . $field;
+            $setter .= "$field = $placeholder, ";
+            $query->addParameters([$placeholder => $value]);
         }
-        //cut last comma
-        $setter = substr($setter, 0, strlen($setter) - 2);
 
-        return $setter;
+        //cut last comma
+        return substr($setter, 0, strlen($setter) - 2);
     }
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null> $item
+     * @param array<string, int|string|null>    $item
+     * @param Query                             $query
      *
      * @return string
      */
-    private function getWhere(FabricImporterDefinitionInterface $definition, array $item): string
+    private function getWhere(FabricImporterDefinitionInterface $definition, array $item, Query $query): string
     {
         $whereQuery = '';
         $isFirst    = true;
@@ -88,7 +100,10 @@ class SaveQueryProvider
                 throw new OutOfRangeException("Identifier '$extName' not found in imported data for $className");
             }
 
-            $whereQuery .= "$where $fieldName = \"" . $item[$extName] . "\"";
+            //prefix placeholder because it might be that we use the same in SET
+            $placeholder = ':w_' . $fieldName;
+            $whereQuery .= "$where $fieldName = $placeholder";
+            $query->addParameters([$placeholder => $item[$extName]]);
 
             $isFirst = false;
         }
@@ -139,24 +154,22 @@ class SaveQueryProvider
 
         //Joins are already included in the item, so we don't need to add them separately here
 
-        foreach ($data as &$val) {
-            $val = $this->formatValueByType($val);
+        $columns = array_keys($data);
+        $placeholders = [];
+        $parameters = [];
+
+        foreach ($columns as $column) {
+            $placeholder = ':' . $column;
+            $placeholders[] = $placeholder;
+            $parameters[$placeholder] = $data[$column];
         }
 
-        $columns = array_keys($data);
-        $values  = array_values($data);
+        $columnsStr = implode(', ', $columns);
+        $placeholdersStr = implode(', ', $placeholders);
 
-        $columns = implode(', ', $columns);
-        $values  = implode(', ', $values);
-
-        $queryObj->setParameters([
-            'table' => $table,
-            'columns' => $columns,
-            'values' => $values
-                                 ]);
-
-        $query = "INSERT INTO :table (:columns) VALUES(:values)";
+        $query = "INSERT INTO $table ($columnsStr) VALUES ($placeholdersStr)";
         $queryObj->setQuery($query);
+        $queryObj->setParameters($parameters);
 
         return $queryObj;
     }

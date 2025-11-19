@@ -7,7 +7,7 @@ class Query
     private string $query = "";
 
     /**
-     * @var string[]
+     * @var array<string, string|int|null>
      */
     private array $parameters = [];
 
@@ -22,15 +22,17 @@ class Query
     /**
      * @param string $query
      *
-     * @return void
+     * @return Query
      */
-    public function setQuery(string $query): void
+    public function setQuery(string $query): self
     {
         $this->query = $query;
+
+        return $this;
     }
 
     /**
-     * @return string[]
+     * @return array<string, string|int|null>
      */
     public function getParameters(): array
     {
@@ -38,12 +40,24 @@ class Query
     }
 
     /**
-     * @param array $parameters
+     * @param array<string, string|int|null> $parameters
+     *
+     * @return Query
+     */
+    public function setParameters(array $parameters): self
+    {
+        $this->parameters = $parameters;
+
+        return $this;
+    }
+
+    /**
+     * @param array<string, string|int|null> $parameters
      *
      * @return void
      */
-    public function setParameters(array $parameters): void
+    public function addParameters(array $parameters): void
     {
-        $this->parameters = $parameters;
+        $this->parameters = [...$this->parameters, ...$parameters];
     }
 }

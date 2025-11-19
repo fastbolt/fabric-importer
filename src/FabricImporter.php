@@ -79,8 +79,8 @@ readonly class FabricImporter
                 if ($definition->getAllowUpdate()) {
                     $uQuery = $this->queryProvider->getUpdateQuery($definition, $item);
 
-                    $stmt    = $conn->prepare($uQuery);
-                    $uResult = $stmt->executeQuery([]); //TODO parameterize
+                    $stmt    = $conn->prepare($uQuery->getQuery());
+                    $uResult = $stmt->executeQuery($uQuery->getParameters());
                     $updateSuccessful = $uResult->rowCount() !== 0;
                 }
 
