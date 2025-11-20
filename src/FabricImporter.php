@@ -75,21 +75,11 @@ readonly class FabricImporter
             $counter = 0;
             foreach ($data as $item) {
                 $counter++;
-                $updateSuccessful = false;
-                if ($definition->getAllowUpdate()) {
-                    $uQuery = $this->queryProvider->getUpdateQuery($definition, $item);
+                $queryObj = $this->queryProvider->getInsertUpdateQuery($definition, $item);
 
-                    $stmt    = $conn->prepare($uQuery->getQuery());
-                    $uResult = $stmt->executeQuery($uQuery->getParameters());
-                    $updateSuccessful = $uResult->rowCount() !== 0;
-                }
+                $stmt    = $conn->prepare($queryObj->getQuery());
+                $stmt->executeQuery($queryObj->getParameters());
 
-                //insert if update failed
-                if (!$updateSuccessful) {
-                    $iQuery = $this->queryProvider->getInsertQuery($definition, $item);
-                    $stmt   = $conn->prepare($iQuery->getQuery());
-                    $stmt->executeQuery($iQuery->getParameters());
-                }
 
                 if ($counter >= $flushInterval) {
                     $conn->commit();

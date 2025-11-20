@@ -17,23 +17,23 @@ class SaveQueryProviderTest extends TestCase
 {
     use QueryCleaner;
 
-    public function testGetUpdateQuery(): void
-    {
-        $definition = new DummyImporterDefinition();
-
-        $item = [
-            'foo_a'    => 'foo',
-            'field1_a' => 'val1',
-            'field2_a' => 'val2'
-        ];
-
-        $provider = new SaveQueryProvider();
-        $result = $provider->getUpdateQuery($definition, $item);
-
-        $expectedQuery = 'UPDATE dummy_table_target SET field1_b = "val1", field2_b = "val2" WHERE foo_b = "foo";';
-
-        $this->assertEquals($expectedQuery, $result, 'Update query not returned as expected.');
-    }
+//    public function testGetUpdateQuery(): void
+//    {
+//        $definition = new DummyImporterDefinition();
+//
+//        $item = [
+//            'foo_a'    => 'foo',
+//            'field1_a' => 'val1',
+//            'field2_a' => 'val2'
+//        ];
+//
+//        $provider = new SaveQueryProvider();
+//        $result = $provider->getUpdateQuery($definition, $item);
+//
+//        $expectedQuery = 'UPDATE dummy_table_target SET field1_b = "val1", field2_b = "val2" WHERE foo_b = "foo";';
+//
+//        $this->assertEquals($expectedQuery, $result, 'Update query not returned as expected.');
+//    }
 
     public function testGetInsertQuery(): void
     {

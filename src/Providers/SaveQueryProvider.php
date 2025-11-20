@@ -17,28 +17,28 @@ use OutOfRangeException;
  */
 class SaveQueryProvider
 {
-    /**
-     * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>         $item
-     *
-     * @return Query
-     */
-    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): Query
-    {
-        $queryObj = new Query();
-        $queryObj->setParameters([
-            'table' => $definition->getTargetTable()
-        ]);
-
-        $set   = $this->getSetter($definition, $item, $queryObj);
-        $where = $this->getWhere($definition, $item, $queryObj);
-
-        $query = "UPDATE :table SET $set $where;";
-        $queryObj->setQuery($query);
-
-
-        return $queryObj;
-    }
+//    /**
+//     * @param FabricImporterDefinitionInterface $definition
+//     * @param array<string, int|string|null>         $item
+//     *
+//     * @return Query
+//     */
+//    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): Query
+//    {
+//        $queryObj = new Query();
+//        $queryObj->setParameters([
+//            'table' => $definition->getTargetTable()
+//        ]);
+//
+//        $set   = $this->getSetter($definition, $item, $queryObj);
+//        $where = $this->getWhere($definition, $item, $queryObj);
+//
+//        $query = "UPDATE :table SET $set $where;";
+//        $queryObj->setQuery($query);
+//
+//
+//        return $queryObj;
+//    }
 
     /**
      * @param FabricImporterDefinitionInterface $definition
@@ -158,6 +158,7 @@ class SaveQueryProvider
         $placeholders = [];
         $parameters = [];
 
+        //placeholders are reused in the ON DUPLICATE KEY UPDATE part, where they rely on being equal to the fieldname
         foreach ($columns as $column) {
             $placeholder = ':' . $column;
             $placeholders[] = $placeholder;
@@ -188,5 +189,35 @@ class SaveQueryProvider
         }
 
         return $value;
+    }
+
+    /**
+     * @param FabricImporterDefinitionInterface $definition
+     * @param array<string, string|int|null>                             $item
+     *
+     * @return Query
+     */
+    public function getInsertUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): Query
+    {
+        $queryObj = $this->getInsertQuery($definition, $item);
+        if ($definition->getAllowUpdate() === false) {
+            return $queryObj;
+        }
+
+        $insert = $queryObj->getQuery();
+        $params = $queryObj->getParameters();
+
+        //placeholders = field names, so no new mapping needed
+        $query = $insert . " ON DUPLICATE KEY UPDATE ";
+        foreach ($params as $placeholder) {
+            if ($placeholder !== null && array_key_exists($placeholder, $definition->getFieldNameMapping())) {
+                $query .= "$placeholder = :$placeholder,";
+            }
+        }
+        $query = rtrim($query, ',');
+
+        $queryObj->setQuery($query);
+
+        return $queryObj;
     }
 }
