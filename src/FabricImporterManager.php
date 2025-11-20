@@ -101,7 +101,7 @@ readonly class FabricImporterManager
 
             if (!$importedData) {
                 if ($isFirstTry) {
-                    $this->saveSyncEntry($type, $syncDate, $importResult);
+                    $this->saveSyncEntry($type, $syncDate, $importResult, $importConfig);
                     $errorCallback(new Exception("Received data is empty for import of '$type'"));
                 }
                 break;
@@ -120,22 +120,29 @@ readonly class FabricImporterManager
             $offset = $definition->getDataBatchSize() + $offset;
         }
 
-        if ($importConfig->isDevMode() === false) {
-            $this->saveSyncEntry($type, $syncDate, $importResult);
-        }
+        $this->saveSyncEntry($type, $syncDate, $importResult, $importConfig);
 
         return [$importResult];
     }
 
     /**
-     * @param string       $type
-     * @param DateTime     $startDate
-     * @param ImportResult $importResult
+     * @param string              $type
+     * @param DateTime            $startDate
+     * @param ImportResult        $importResult
+     * @param ImportConfiguration $importConfig
      *
      * @return void
      */
-    private function saveSyncEntry(string $type, DateTime $startDate, ImportResult $importResult): void
-    {
+    private function saveSyncEntry(
+        string $type,
+        DateTime $startDate,
+        ImportResult $importResult,
+        ImportConfiguration $importConfig
+    ): void {
+        if ($importConfig->isDevMode() === true) {
+            return;
+        }
+
         $syncEntry = $this->syncRepository->find($type);
         if (!$syncEntry) {
             $syncEntry = new FabricSync();
