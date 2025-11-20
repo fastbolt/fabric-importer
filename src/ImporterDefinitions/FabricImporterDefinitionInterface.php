@@ -123,6 +123,13 @@ interface FabricImporterDefinitionInterface
     public function getJoinedFields(): array;
 
     /**
+     * Returns all fields on the target table that are not identifier fields (combined from joined and field-mapping)
+     *
+     * @return string[]
+     */
+    public function getWritableFields(): array;
+
+    /**
      * Returns a fieldName => value array of default values, that will be added to the UPDATE statement.
      *
      * @return array<string, string|int|null>
