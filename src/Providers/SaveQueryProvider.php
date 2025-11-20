@@ -17,103 +17,9 @@ use OutOfRangeException;
  */
 class SaveQueryProvider
 {
-//    /**
-//     * @param FabricImporterDefinitionInterface $definition
-//     * @param array<string, int|string|null>         $item
-//     *
-//     * @return Query
-//     */
-//    public function getUpdateQuery(FabricImporterDefinitionInterface $definition, array $item): Query
-//    {
-//        $queryObj = new Query();
-//        $queryObj->setParameters([
-//            'table' => $definition->getTargetTable()
-//        ]);
-//
-//        $set   = $this->getSetter($definition, $item, $queryObj);
-//        $where = $this->getWhere($definition, $item, $queryObj);
-//
-//        $query = "UPDATE :table SET $set $where;";
-//        $queryObj->setQuery($query);
-//
-//
-//        return $queryObj;
-//    }
-
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>    $item
-     *
-     * @return string
-     */
-    private function getSetter(FabricImporterDefinitionInterface $definition, array $item, Query $query): string
-    {
-        $fieldMapping = $definition->getFieldNameMapping();
-        $joinedFields = $definition->getJoinedFields();
-
-        $setter = '';
-        foreach ($item as $prop => $value) {
-            $value = $this->formatValueByType($value);
-
-            if (
-                in_array($prop, $joinedFields)
-                || array_key_exists($prop, $definition->getDefaultValuesForUpdate())
-            ) {
-                $placeholder = ':' . $prop;
-                $setter .= "$prop = $placeholder, ";
-                $query->addParameters([$placeholder => $value]);
-                continue;
-            }
-
-            //skipping identifiers (we don't want to update those) and fields, which are not in field-mapping
-            $field = $fieldMapping[$prop] ?? null;
-            if (!$field) {
-                continue;
-            }
-
-            //standard field, prefix placeholder because it might be that we use the same in WHERE
-            $placeholder = ':s_' . $field;
-            $setter      .= "$field = $placeholder, ";
-            $query->addParameters([$placeholder => $value]);
-        }
-
-        //cut last comma
-        return substr($setter, 0, strlen($setter) - 2);
-    }
-
-    /**
-     * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>    $item
-     * @param Query                             $query
-     *
-     * @return string
-     */
-    private function getWhere(FabricImporterDefinitionInterface $definition, array $item, Query $query): string
-    {
-        $whereQuery = '';
-        $isFirst    = true;
-        foreach ($definition->getIdentifierMapping() as $extName => $fieldName) {
-            $where = $isFirst ? 'WHERE' : ' AND';
-
-            if (!array_key_exists($extName, $item)) {
-                $className = $definition::class;
-                throw new OutOfRangeException("Identifier '$extName' not found in imported data for $className");
-            }
-
-            //prefix placeholder because it might be that we use the same in SET
-            $placeholder = ':w_' . $fieldName;
-            $whereQuery  .= "$where $fieldName = $placeholder";
-            $query->addParameters([$placeholder => $item[$extName]]);
-
-            $isFirst = false;
-        }
-
-        return $whereQuery;
-    }
-
-    /**
-     * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>    $item
+     * @param array<string, string|int|float|null>    $item
      *
      * @return Query
      */
@@ -176,24 +82,8 @@ class SaveQueryProvider
     }
 
     /**
-     * @param int|string|null $value
-     *
-     * @return int|string
-     */
-    private function formatValueByType(int|string|null $value): int|string
-    {
-        if ($value === null) {
-            return '(NULL)';
-        } elseif (is_string($value)) {
-            return "\"$value\"";
-        }
-
-        return $value;
-    }
-
-    /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, string|int|null>    $item
+     * @param array<string, string|int|float|null>    $item
      *
      * @return Query
      */

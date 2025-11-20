@@ -7,7 +7,7 @@ class Query
     private string $query = "";
 
     /**
-     * @var array<string, string|int|null>
+     * @var array<string, string|int|float|null>
      */
     private array $parameters = [];
 
@@ -32,7 +32,7 @@ class Query
     }
 
     /**
-     * @return array<string, string|int|null>
+     * @return array<string, string|int|float|null>
      */
     public function getParameters(): array
     {
@@ -40,7 +40,7 @@ class Query
     }
 
     /**
-     * @param array<string, string|int|null> $parameters
+     * @param array<string, string|int|float|null> $parameters
      *
      * @return Query
      */
@@ -52,7 +52,7 @@ class Query
     }
 
     /**
-     * @param array<string, string|int|null> $parameters
+     * @param array<string, string|int|float|null> $parameters
      *
      * @return void
      */

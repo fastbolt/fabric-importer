@@ -132,14 +132,14 @@ interface FabricImporterDefinitionInterface
     /**
      * Returns a fieldName => value array of default values, that will be added to the UPDATE statement.
      *
-     * @return array<string, string|int|null>
+     * @return array<string, string|int|float|null>
      */
     public function getDefaultValuesForUpdate(): array;
 
     /**
      * Returns a fieldName => value array of default values, that will be added to the INSERT statement.
      *
-     * @return array<string, string|int|null>
+     * @return array<string, string|int|float|null>
      */
     public function getDefaultValuesForInsert(): array;
 
