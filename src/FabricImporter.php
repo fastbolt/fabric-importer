@@ -76,10 +76,8 @@ readonly class FabricImporter
             foreach ($data as $item) {
                 $counter++;
                 $queryObj = $this->queryProvider->getInsertUpdateQuery($definition, $item);
-
                 $stmt    = $conn->prepare($queryObj->getQuery());
                 $stmt->executeQuery($queryObj->getParameters());
-
 
                 if ($counter >= $flushInterval) {
                     $conn->commit();

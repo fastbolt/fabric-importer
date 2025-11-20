@@ -42,7 +42,7 @@ class SaveQueryProvider
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>         $item
+     * @param array<string, int|string|null>    $item
      *
      * @return string
      */
@@ -73,7 +73,7 @@ class SaveQueryProvider
 
             //standard field, prefix placeholder because it might be that we use the same in WHERE
             $placeholder = ':s_' . $field;
-            $setter .= "$field = $placeholder, ";
+            $setter      .= "$field = $placeholder, ";
             $query->addParameters([$placeholder => $value]);
         }
 
@@ -102,7 +102,7 @@ class SaveQueryProvider
 
             //prefix placeholder because it might be that we use the same in SET
             $placeholder = ':w_' . $fieldName;
-            $whereQuery .= "$where $fieldName = $placeholder";
+            $whereQuery  .= "$where $fieldName = $placeholder";
             $query->addParameters([$placeholder => $item[$extName]]);
 
             $isFirst = false;
@@ -113,7 +113,7 @@ class SaveQueryProvider
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, int|string|null>         $item
+     * @param array<string, int|string|null>    $item
      *
      * @return Query
      */
@@ -158,15 +158,15 @@ class SaveQueryProvider
         $placeholders = [];
         $parameters = [];
 
-        //placeholders are reused in the ON DUPLICATE KEY UPDATE part, where they rely on being equal to the fieldname
+        //parameters are reused in the ON DUPLICATE KEY UPDATE part, where they rely on being equal to the fieldname
         foreach ($columns as $column) {
             $placeholder = ':' . $column;
             $placeholders[] = $placeholder;
-            $parameters[$placeholder] = $data[$column];
+            $parameters[$column] = $data[$column];
         }
 
-        $columnsStr = implode(', ', $columns);
-        $placeholdersStr = implode(', ', $placeholders);
+        $columnsStr = implode(',', $columns);
+        $placeholdersStr = implode(',', $placeholders);
 
         $query = "INSERT INTO $table ($columnsStr) VALUES ($placeholdersStr)";
         $queryObj->setQuery($query);
@@ -193,7 +193,7 @@ class SaveQueryProvider
 
     /**
      * @param FabricImporterDefinitionInterface $definition
-     * @param array<string, string|int|null>                             $item
+     * @param array<string, string|int|null>    $item
      *
      * @return Query
      */
@@ -208,10 +208,10 @@ class SaveQueryProvider
         $params = $queryObj->getParameters();
 
         //placeholders = field names, so no new mapping needed
-        $query = $insert . " ON DUPLICATE KEY UPDATE ";
-        foreach ($params as $placeholder) {
+        $query = $insert . ' ON DUPLICATE KEY UPDATE ';
+        foreach ($params as $placeholder => $value) {
             if ($placeholder !== null && array_key_exists($placeholder, $definition->getFieldNameMapping())) {
-                $query .= "$placeholder = :$placeholder,";
+                $query .= "$placeholder=:$placeholder,";
             }
         }
         $query = rtrim($query, ',');
