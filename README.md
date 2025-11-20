@@ -279,3 +279,6 @@ class CustomerImporterDefinition extends FabricImporterDefinition
     }
 }
 ```
+
+## Notes
+- If your table has any composite constraints, make sure they are defined in the entity&table, otherwise the import will duplicate rows, regardless of what you return from the identiferMapping method.
