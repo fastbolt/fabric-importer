@@ -101,6 +101,7 @@ readonly class FabricImporterManager
 
             if (!$importedData) {
                 if ($isFirstTry) {
+                    $this->saveSyncEntry($type, $syncDate, $importResult);
                     $errorCallback(new Exception("Received data is empty for import of '$type'"));
                 }
                 break;
