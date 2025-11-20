@@ -85,7 +85,12 @@ readonly class FabricImporterManager
         $offset         = 0;
         $isFirstTry     = true;
         $syncDate       = new DateTime();
+
         $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
+        if ($importConfig->isAllMode() === true) {
+            $lastImportDate = null;
+        }
+
         $connection     = $this->managerRegistry->getConnection('fabric');
         $importResult   = new ImportResult($definition);
         while (true) {

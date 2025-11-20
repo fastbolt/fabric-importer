@@ -47,7 +47,8 @@ class ImportFromFabricCommand extends Command
     {
         $this
             ->addArgument('type', InputArgument::OPTIONAL, 'The import which you want to execute', '')
-            ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode');
+            ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode')
+            ->addOption('all', null, InputOption::VALUE_NONE, 'Request all data, regardless of the date of the last update');
     }
 
     /**
@@ -88,6 +89,7 @@ class ImportFromFabricCommand extends Command
         /** @var string $type */
         $type  = $input->getArgument('type');
         $isDev = (bool) $input->getOption('dev');
+        $isAll = (bool) $input->getOption('all');
 
         try {
             $bar = new ProgressBar($output);
@@ -95,7 +97,8 @@ class ImportFromFabricCommand extends Command
 
             $importConfig = new ImportConfiguration(
                 $type,
-                $isDev
+                $isDev,
+                $isAll
             );
 
             $results = $this->importManager->import(

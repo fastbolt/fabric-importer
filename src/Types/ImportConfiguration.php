@@ -7,10 +7,12 @@ readonly class ImportConfiguration
     /**
      * @param string $type
      * @param bool   $isDev
+     * @param bool   $isAll
      */
     public function __construct(
         private string $type,
-        private bool $isDev
+        private bool $isDev,
+        private bool $isAll
     ) {
     }
 
@@ -28,5 +30,13 @@ readonly class ImportConfiguration
     public function isDevMode(): bool
     {
         return $this->isDev;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAllMode(): bool
+    {
+        return $this->isAll;
     }
 }
