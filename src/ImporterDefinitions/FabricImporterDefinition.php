@@ -122,7 +122,7 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
      */
     public function getWritableFields(): array
     {
-        return [array_values($this->getFieldNameMapping()), ...$this->getJoinedFields()];
+        return [...array_values($this->getFieldNameMapping()), ...$this->getJoinedFields()];
     }
 
     /**
