@@ -107,6 +107,7 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
      */
     final public function getJoinedFields(): array
     {
+        /** @var string[] $fields */
         $fields = [];
         foreach ($this->tableJoins as $join) {
             foreach ($join->getSelects() as $jSelect) {
@@ -120,9 +121,23 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     /**
      * @inheritDoc
      */
-    public function getWritableFields(): array
+    final public function getUpdatableFields(): array
     {
-        return [...array_values($this->getFieldNameMapping()), ...$this->getJoinedFields()];
+        /** @var string[] $joined */
+        $joined = [];
+        foreach ($this->getJoinedFields() as $field) {
+            if (!in_array($field, $this->getIdentifierColumns())) {
+                $joined[] = $field;
+            }
+        }
+
+        /** @var string[] $fields */
+        $fields = [
+            ...array_values($this->getFieldNameMapping()),
+            ...$joined,
+            ...array_keys($this->getDefaultValuesForUpdate())
+        ];
+        return $fields;
     }
 
     /**

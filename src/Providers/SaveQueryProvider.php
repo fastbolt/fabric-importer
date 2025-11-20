@@ -210,7 +210,7 @@ class SaveQueryProvider
         //placeholders = field names, so no new mapping needed
         $query = $insert . ' ON DUPLICATE KEY UPDATE ';
         foreach ($params as $placeholder => $value) {
-            if ($placeholder !== null && in_array($placeholder, $definition->getWritableFields())) {
+            if ($placeholder !== null && in_array($placeholder, $definition->getUpdatableFields())) {
                 $query .= "$placeholder=:$placeholder,";
             }
         }
