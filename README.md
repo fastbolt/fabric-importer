@@ -45,7 +45,7 @@ Run this command to create the fabric_syncs table in your database.
 php bin/console fabric-importer:init
 ```
 
-##Usage
+## Usage
 Run this command to import the data
 ´´´console
 php bin/console fabric-importer:import <import name>

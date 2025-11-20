@@ -106,12 +106,6 @@ readonly class FabricImporter
             $errorCallback($exception);
         }
 
-
-        //TODO check if i still need this
-//        $archivingResult = $sourceDefinition->getArchivingStrategy()
-//                                            ->archive($sourceDefinition);
-//        $result->setArchivingResult($archivingResult);
-
         return $importResult;
     }
 

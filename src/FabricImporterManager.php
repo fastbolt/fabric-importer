@@ -24,7 +24,7 @@ use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
-class FabricImporterManager
+readonly class FabricImporterManager
 {
     /**
      * @param ManagerRegistry                             $managerRegistry
