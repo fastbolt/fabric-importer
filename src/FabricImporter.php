@@ -55,9 +55,10 @@ readonly class FabricImporter
         callable $errorCallback,
         callable $warningCallback
     ): ImportResult {
-        try {
-            $flushInterval = $definition->getFlushInterval();
+        $rollbackSuccess = $importResult->getSuccess();
+        $flushInterval = $definition->getFlushInterval();
 
+        try {
             //data formatting
             if ($importConfig->isDevMode()) {
                 foreach ($data as &$i) {
@@ -91,6 +92,9 @@ readonly class FabricImporter
 
             $conn->commit();
         } catch (Throwable $exception) {
+            $importResult
+                ->setSuccess($rollbackSuccess)
+                ->increaseErrors(count($data));
             $errorCallback($exception);
         }
 

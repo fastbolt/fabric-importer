@@ -39,7 +39,14 @@ class ImportResult
      */
     public function increaseSuccess(int $number = 1): self
     {
-        $this->success = $this->success + $number;
+        $this->success += $number;
+
+        return $this;
+    }
+
+    public function setSuccess(int $number): self
+    {
+        $this->success = $number;
 
         return $this;
     }
@@ -47,9 +54,9 @@ class ImportResult
     /**
      * @return $this
      */
-    public function increaseErrors(): self
+    public function increaseErrors(int $number = 1): self
     {
-        $this->errors++;
+        $this->errors += $number;
 
         return $this;
     }
