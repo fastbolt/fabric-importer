@@ -49,8 +49,15 @@ class SaveQueryProviderTest extends TestCase
         $provider = new SaveQueryProvider();
         $result = $provider->getInsertQuery($definition, $item);
 
-        $expectedQuery = 'INSERT INTO dummy_table_target (foo_b, field1_b, field2_b, eggTarget) VALUES("foo", "val1", "val2", "egg")';
+        $expectedQuery = 'INSERT INTO dummy_table_target (foo_b,field1_b,field2_b,eggTarget) VALUES (:foo_b,:field1_b,:field2_b,:eggTarget)';
+        $expectedParams = [
+            'foo_b' => 'foo',
+            'field1_b' => 'val1',
+            'field2_b' => 'val2',
+            'eggTarget' => 'egg'
+        ];
 
-        self::assertEquals($expectedQuery, $result, 'Insert query not generated as expected.');
+        self::assertEquals($expectedQuery, $result->getQuery(), 'Insert query not generated as expected.');
+        self::assertEquals($expectedParams, $result->getParameters(), 'Insert query params not returned as expected.');
     }
 }
