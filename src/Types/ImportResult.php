@@ -44,6 +44,11 @@ class ImportResult
         return $this;
     }
 
+    /**
+     * @param int $number
+     *
+     * @return $this
+     */
     public function setSuccess(int $number): self
     {
         $this->success = $number;
