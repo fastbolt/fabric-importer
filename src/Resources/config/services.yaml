@@ -8,6 +8,7 @@ services:
         tags: [ 'console.command' ]
         arguments:
             $importManager: '@Fastbolt\FabricImporter\FabricImporterManager'
+            $syncRepository: '@Fastbolt\FabricImporter\Repository\FabricSyncRepository'
 
     Fastbolt\FabricImporter\FabricImporterManager:
         $managerRegistry: '@doctrine'
