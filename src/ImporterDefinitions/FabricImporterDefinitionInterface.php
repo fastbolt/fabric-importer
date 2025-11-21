@@ -55,7 +55,7 @@ interface FabricImporterDefinitionInterface
 
     /**
      * List of columns used as doctrine identifier, for loading existing items from the database.
-     * You will only need to overwrite this, if you have a foreign key as identifier.
+     * You will only need to overwrite this if you have a foreign key as identifier.
      *
      * @return array<int, string>
      */
