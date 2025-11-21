@@ -17,9 +17,32 @@ use Doctrine\ORM\Mapping as ORM;
 class FabricSync
 {
     #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private int $id = 0;
+
+    #[ORM\Id]
     #[ORM\Column(length: 255)]
     #[ORM\GeneratedValue(strategy: 'NONE')]
     private ?string $type = null;
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return void
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
 
     #[ORM\Column]
     private ?DateTime $loaded_at = null;

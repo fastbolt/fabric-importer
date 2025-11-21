@@ -49,12 +49,12 @@ class InitCommand extends Command
     private function createSyncTable(Connection $conn): void
     {
         $query = "CREATE TABLE `fabric_syncs` (
+          `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
           `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
           `loaded_at` datetime NOT NULL,
           `exec_time_seconds` int NOT NULL,
           `successes` int NOT NULL,
-          `failures` int NOT NULL,
-          PRIMARY KEY (`type`)
+          `failures` int NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
 

@@ -43,16 +43,23 @@ class FabricSyncRepository extends ServiceEntityRepository
      */
     public function findLatestForAllTypes(): array
     {
-        $query = $this->createQueryBuilder('s')
-                      ->select('s')
-                      ->where('s.loadedAt = (SELECT MAX(sub.loadedAt) FROM ' . FabricSync::class . ' sub WHERE sub.type = s.type)')
-                      ->groupBy('s.type')
-                      ->getQuery();
+        /** @var FabricSync[] $syncs */
+        $syncs = $this->createQueryBuilder('s')
+                      ->getQuery()
+                      ->getResult();
 
-        /** @var FabricSync[] $res */
-        $res = $query->getResult();
+        /** @var FabricSync[] $latest */
+        $latest = [];
+        foreach ($syncs as $sync) {
+            if (array_key_exists($sync->getType() ?? "", $latest)) {
+                if ($sync->getLoadedAt() > $latest[$sync->getType()]->getLoadedAt()) {
+                    continue;
+                }
+            }
+            $latest[$sync->getType()] = $sync;
+        }
 
-        return $res;
+        return $latest;
     }
 
     /**
@@ -62,21 +69,19 @@ class FabricSyncRepository extends ServiceEntityRepository
      */
     public function reduceEntriesToLimit(int $entryLimit): void
     {
-        /** @var FabricSync[] $all */
-        $all = $this->createQueryBuilder('s')
-                    ->orderBy('s.loaded_at', 'ASC')
-                    ->getQuery()
-                    ->getResult();
+        $all = $this->findBy([], ['loaded_at' => 'ASC']);
+        $excess = count($all) - $entryLimit;
+        if ($excess <= 0) {
+            return;
+        }
 
-        $excess = count($all) -  $entryLimit;
+        $toRemove = array_slice($all, 0, $excess);
+        if ($toRemove === []) {
+            return;
+        }
 
-        while ($excess > 0) {
-            $sync = array_shift($all);
-            if ($sync === null) {
-                continue;
-            }
+        foreach ($toRemove as $sync) {
             $this->getEntityManager()->remove($sync);
-            $excess--;
         }
 
         $this->getEntityManager()->flush();
