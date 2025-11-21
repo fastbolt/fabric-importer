@@ -13,6 +13,7 @@ use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\Exceptions\NoDataReceivedException;
 use Fastbolt\FabricImporter\FabricImporterManager;
+use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -35,7 +36,8 @@ class ImportFromFabricCommand extends Command
      * @param FabricImporterManager $importManager
      */
     public function __construct(
-        private readonly FabricImporterManager $importManager
+        private readonly FabricImporterManager $importManager,
+        private readonly FabricSyncRepository $syncRepository
     ) {
         parent::__construct();
     }
@@ -98,7 +100,8 @@ class ImportFromFabricCommand extends Command
             $importConfig = new ImportConfiguration(
                 $type,
                 $isDev,
-                $isAll
+                $isAll,
+                100
             );
 
             $results = $this->importManager->import(
@@ -132,6 +135,8 @@ class ImportFromFabricCommand extends Command
                 }
             );
             $bar->finish();
+
+            $this->syncRepository->reduceEntriesToLimit($importConfig->getEntryLimit());
 
             $table = $this->getResultTable($results);
 

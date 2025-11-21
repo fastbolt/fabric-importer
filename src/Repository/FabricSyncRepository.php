@@ -37,4 +37,48 @@ class FabricSyncRepository extends ServiceEntityRepository
 
         return $sync?->getLoadedAt() ?? null;
     }
+
+    /**
+     * @return FabricSync[]
+     */
+    public function findLatestForAllTypes(): array
+    {
+        $query = $this->createQueryBuilder('s')
+                      ->select('s')
+                      ->where('s.loadedAt = (SELECT MAX(sub.loadedAt) FROM ' . FabricSync::class . ' sub WHERE sub.type = s.type)')
+                      ->groupBy('s.type')
+                      ->getQuery();
+
+        /** @var FabricSync[] $res */
+        $res = $query->getResult();
+
+        return $res;
+    }
+
+    /**
+     * @param int $entryLimit
+     *
+     * @return void
+     */
+    public function reduceEntriesToLimit(int $entryLimit): void
+    {
+        /** @var FabricSync[] $all */
+        $all = $this->createQueryBuilder('s')
+                    ->orderBy('s.loaded_at', 'ASC')
+                    ->getQuery()
+                    ->getResult();
+
+        $excess = count($all) -  $entryLimit;
+
+        while ($excess > 0) {
+            $sync = array_shift($all);
+            if ($sync === null) {
+                continue;
+            }
+            $this->getEntityManager()->remove($sync);
+            $excess--;
+        }
+
+        $this->getEntityManager()->flush();
+    }
 }

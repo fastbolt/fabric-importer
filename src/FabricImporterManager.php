@@ -148,14 +148,10 @@ readonly class FabricImporterManager
             return;
         }
 
-        $syncEntry = $this->syncRepository->find($type);
-        if (!$syncEntry) {
-            $syncEntry = new FabricSync();
-            $syncEntry->setType($type);
-        }
-
         $timePassed = (time() - $startDate->getTimestamp());
+        $syncEntry = new FabricSync();
         $syncEntry
+            ->setType($type)
             ->setLoadedAt($startDate)
             ->setSuccesses($importResult->getSuccess())
             ->setFailures($importResult->getErrors())
@@ -174,7 +170,8 @@ readonly class FabricImporterManager
     private function checkForDependedImports(FabricImporterDefinitionInterface $definition): void
     {
         $dependencies = $definition->getImportDependencies();
-        $syncs        = $this->syncRepository->findAll();
+        $syncs        = $this->syncRepository->findLatestForAllTypes();
+
         foreach ($dependencies as $dep) {
             foreach ($syncs as $sync) {
                 if ($sync->getType() !== $dep) {

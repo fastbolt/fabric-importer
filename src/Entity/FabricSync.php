@@ -24,7 +24,6 @@ class FabricSync
     #[ORM\Column]
     private ?DateTime $loaded_at = null;
 
-
     #[ORM\Column]
     private int $execTimeSeconds = 0;
 

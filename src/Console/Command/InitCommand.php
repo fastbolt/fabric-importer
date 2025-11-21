@@ -54,8 +54,7 @@ class InitCommand extends Command
           `exec_time_seconds` int NOT NULL,
           `successes` int NOT NULL,
           `failures` int NOT NULL,
-          PRIMARY KEY (`type`),
-          UNIQUE KEY `type` (`type`)
+          PRIMARY KEY (`type`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
 
