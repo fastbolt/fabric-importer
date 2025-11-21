@@ -49,7 +49,7 @@ interface FabricImporterDefinitionInterface
      * Example:
      *      ['name1' => 'lastname']
      *
-     * @return array<string, string>
+     * @return array<string, string|null>
      */
     public function getFieldNameMapping(): array;
 
