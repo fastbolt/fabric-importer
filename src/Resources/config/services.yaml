@@ -17,6 +17,7 @@ services:
         $em: '@doctrine.orm.entity_manager'
         $queryProvider: '@Fastbolt\FabricImporter\Providers\ImportQueryProvider'
         $definitions: !tagged fastbolt.fabric_importer
+        $dependencyMaxAge: '%fabric_importer.dependency_import_max_age%'
 
     Fastbolt\FabricImporter\FabricImporter:
         $entityManager: '@doctrine.orm.entity_manager'

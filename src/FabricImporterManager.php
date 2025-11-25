@@ -41,7 +41,8 @@ readonly class FabricImporterManager
         private EntityManagerInterface $em,
         private ImportQueryProvider $queryProvider,
         #[AutowireIterator('fastbolt.fabric_importer')]
-        private iterable $definitions = []
+        private iterable $definitions = [],
+        private string $depedenyMaxAge
     ) {
     }
 
@@ -178,7 +179,7 @@ readonly class FabricImporterManager
                     continue;
                 }
 
-                $threshold = new DateTime('-1 hour');
+                $threshold = new DateTime('-' . $this->depedenyMaxAge);
                 if ($sync->getLoadedAt() && $sync->getLoadedAt() > $threshold) {
                     continue 2;
                 }

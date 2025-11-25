@@ -2,7 +2,6 @@
 
 namespace Fastbolt\FabricImporter\DependencyInjection;
 
-use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -20,6 +19,13 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+
+        $container->setParameter('fabric_importer.sync_entry_limit', $config['sync_entry_limit']);
+        $container->setParameter('fabric_importer.dependency_import_max_age', $config['dependency_import_max_age']);
+        $container->setParameter('fabric_importer.database_url', $config['database_url']);
+
         $loader = new YamlFileLoader(
             $container,
             new FileLocator(__DIR__ . '/../Resources/config')
@@ -43,7 +49,7 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
                     'connections' => [
                         'fabric' => [
                             'driver'  => 'sqlsrv',
-                            'url'     => '%env(resolve:DATABASE_FABRIC_URL)%',
+                            'url'     => '%fabric_importer.database_url%',
                             'options' => [
                                 'CharacterSet' => 'UTF-8',
                             ],

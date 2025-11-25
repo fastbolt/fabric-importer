@@ -37,7 +37,8 @@ class ImportFromFabricCommand extends Command
      */
     public function __construct(
         private readonly FabricImporterManager $importManager,
-        private readonly FabricSyncRepository $syncRepository
+        private readonly FabricSyncRepository $syncRepository,
+        private int $entryLimit
     ) {
         parent::__construct();
     }
@@ -100,8 +101,7 @@ class ImportFromFabricCommand extends Command
             $importConfig = new ImportConfiguration(
                 $type,
                 $isDev,
-                $isAll,
-                100
+                $isAll
             );
 
             $results = $this->importManager->import(
@@ -136,7 +136,7 @@ class ImportFromFabricCommand extends Command
             );
             $bar->finish();
 
-            $this->syncRepository->reduceEntriesToLimit($importConfig->getEntryLimit());
+            $this->syncRepository->reduceEntriesToLimit($this->entryLimit);
 
             $table = $this->getResultTable($results);
 
