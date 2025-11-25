@@ -25,6 +25,14 @@ return [
 ];
 ```
 
+Add a config/fabric_importer.yaml. 'database_url' is required.
+```yaml
+    fabric_importer:
+        database_url : ""
+        dependency_max_age: '1 hour'
+        sync_entry_limit: 100
+```
+
 Add your fabric-database's url to your environment.
 ```text
 ###< fastbolt/fabric-importer
