@@ -26,9 +26,6 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
         );
 
         $loader->load('services.yaml');
-
-        $container->registerForAutoconfiguration(FabricImporterDefinitionInterface::class)
-                  ->addTag('fastbolt.fabric_importer');
     }
 
     /**
