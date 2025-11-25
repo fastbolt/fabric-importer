@@ -25,14 +25,6 @@ return [
 ];
 ```
 
-Add this to your services.yaml to tag the implementations of the import-definition.
-```yaml
-services:
-    _instanceof:
-      Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface:
-        tags: ['fastbolt.fabric_importer']
-```
-
 Add your fabric-database's url to your environment.
 ```text
 ###< fastbolt/fabric-importer

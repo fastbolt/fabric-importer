@@ -8,8 +8,8 @@
 
 namespace Fastbolt\FabricImporter;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-class FabricImporterBundle extends Bundle
+class FabricImporterBundle extends AbstractBundle
 {
 }

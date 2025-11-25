@@ -2,6 +2,7 @@
 
 namespace Fastbolt\FabricImporter\DependencyInjection;
 
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -25,6 +26,9 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
         );
 
         $loader->load('services.yaml');
+
+        $container->registerForAutoconfiguration(FabricImporterDefinitionInterface::class)
+                  ->addTag('fastbolt.fabric_importer');
     }
 
     /**
