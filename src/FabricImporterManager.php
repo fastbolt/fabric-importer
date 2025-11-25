@@ -41,8 +41,8 @@ readonly class FabricImporterManager
         private EntityManagerInterface $em,
         private ImportQueryProvider $queryProvider,
         #[AutowireIterator('fastbolt.fabric_importer')]
+        private string $depedenyMaxAge,
         private iterable $definitions = [],
-        private string $depedenyMaxAge
     ) {
     }
 

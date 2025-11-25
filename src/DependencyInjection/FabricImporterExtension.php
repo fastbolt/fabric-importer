@@ -23,7 +23,7 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
         $configuration = new Configuration();
         $config        = $this->processConfiguration($configuration, $configs);
         foreach ($config as $key => $value) {
-            $container->setParameter('entity_importer.' . $key, $value);
+            $container->setParameter('fabric_importer.' . $key, $value);
         }
 
         $loader = new YamlFileLoader(
