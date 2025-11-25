@@ -27,5 +27,3 @@ services:
 
     Fastbolt\FabricImporter\Repository\FabricSyncRepository:
         $registry: '@doctrine'
-
-    Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition:
