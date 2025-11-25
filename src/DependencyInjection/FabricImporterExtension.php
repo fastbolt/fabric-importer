@@ -19,12 +19,12 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
+        // load configuration
         $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
-
-        $container->setParameter('fabric_importer.sync_entry_limit', $config['sync_entry_limit']);
-        $container->setParameter('fabric_importer.dependency_import_max_age', $config['dependency_import_max_age']);
-        $container->setParameter('fabric_importer.database_url', $config['database_url']);
+        $config        = $this->processConfiguration($configuration, $configs);
+        foreach ($config as $key => $value) {
+            $container->setParameter('entity_importer.' . $key, $value);
+        }
 
         $loader = new YamlFileLoader(
             $container,
