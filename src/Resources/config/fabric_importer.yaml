@@ -1,4 +1,5 @@
+#This file is not used in the package, but for demonstration purposes for the file you need to create in your /configs
 fabric_importer:
+    database_url : ""
     dependency_import_max_age: '1 hour'
     sync_entry_limit: 100
-    database_url : ""

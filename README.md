@@ -28,16 +28,9 @@ return [
 Add a config/fabric_importer.yaml. 'database_url' is required.
 ```yaml
     fabric_importer:
-        database_url : ""
-        dependency_max_age: '1 hour'
+        database_url : "sqlsrv://<user>@<host>.fabric.microsoft.com?serverVersion=<version>.8&Encrypt=true&TrustServerCertificate=true&dbname=lake_silver&charset=&port=1433&driverOptions[Authentication]=ActiveDirectoryPassword&driverOptions[MultipleActiveResultSets]=0&driverOptions[Encrypt]=1&driverOptions[TrustServerCertificate]=1"
+        dependency_import_max_age: '1 hour'
         sync_entry_limit: 100
-```
-
-Add your fabric-database's url to your environment.
-```text
-###< fastbolt/fabric-importer
-DATABASE_FABRIC_URL="sqlsrv://user@host.fabric.microsoft.com?serverVersion=12.0.2000.8&Encrypt=true&TrustServerCertificate=true&dbname=lake_silver&charset=&port=1433&driverOptions[Authentication]=ActiveDirectoryPassword&driverOptions[MultipleActiveResultSets]=0&driverOptions[Encrypt]=1&driverOptions[TrustServerCertificate]=1"
-###> fastbolt/fabric-importer
 ```
 
 Run this command to create the fabric_syncs table in your database. Every time an import ran, a save will be added to this table. Then the oldest entries are deleted.

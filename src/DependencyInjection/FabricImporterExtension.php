@@ -30,7 +30,6 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
             $container,
             new FileLocator(__DIR__ . '/../Resources/config')
         );
-
         $loader->load('services.yaml');
     }
 
@@ -41,6 +40,15 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
      */
     public function prepend(ContainerBuilder $container): void
     {
+        $configs = $container->getExtensionConfig($this->getAlias());
+        $config = $configs[0] ?? [];
+
+        /** @var string $databaseUrl */
+        $databaseUrl = $config['database_url'] ?? "";
+        if ($databaseUrl === "") {
+            throw new \Exception('\'database_url\' configuration is required for fabric_importer extension.');
+        }
+
         // DBAL config hinzufügen
         $container->prependExtensionConfig(
             'doctrine',
@@ -49,7 +57,7 @@ class FabricImporterExtension extends Extension implements PrependExtensionInter
                     'connections' => [
                         'fabric' => [
                             'driver'  => 'sqlsrv',
-                            'url'     => '%fabric_importer.database_url%',
+                            'url'     => $databaseUrl,
                             'options' => [
                                 'CharacterSet' => 'UTF-8',
                             ],
