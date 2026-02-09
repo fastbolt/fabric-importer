@@ -27,7 +27,7 @@
       "symfony/filesystem": "^6.0",
       "symfony/framework-bundle": "^6.4",
       "doctrine/doctrine-bundle": "^2.6",
-      "doctrine/orm": "^2.12"
+      "doctrine/orm": "^2.12|^3.2"
   },
   "require-dev": {
       "fig-r/psr2r-sniffer": "^1.3",
