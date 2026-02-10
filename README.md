@@ -1,4 +1,5 @@
 # fabric-importer
+
 A package to import data from Microsoft Fabric.
 
 ## Prerequisites
@@ -13,6 +14,24 @@ The library can be installed via composer:
 ```
 composer require fastbolt/fabric-importer
 ```
+
+## Ubuntu SQL / ODBC driver installation (Ubuntu 22.04 LTS, currently only available for PHP up to 8.3)
+
+```console
+curl -sSL -O https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb 
+dpkg -i packages-microsoft-prod.deb 
+rm packages-microsoft-prod.deb 
+apt-get update 
+apt-get install -y msodbcsql18
+
+apt-get install unixodbc-dev -y
+pecl install sqlsrv
+pecl install pdo_sqlsrv
+printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini
+printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.2/mods-available/pdo_sqlsrv.ini
+phpenmod -v 8.2 sqlsrv pdo_sqlsrv
+```
+
 
 ## Configuration
 
@@ -32,6 +51,27 @@ Add a config/fabric_importer.yaml. 'database_url' is required.
         dependency_import_max_age: '1 hour'
         sync_entry_limit: 100
 ```
+
+## Doctrine Configuration
+
+Both connection and entity manager configuration needs to be moved under the `default` or any other namespace, instead of using the standard single-connection config scheme in `config/doctrine.yaml`:
+
+```yaml
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                old: config here
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                old: config here
+```
+
+## Initialization
 
 Run this command to create the fabric_syncs table in your database. Every time an import ran, a save will be added to this table. Then the oldest entries are deleted.
 ```console
