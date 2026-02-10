@@ -67,7 +67,7 @@ readonly class FabricImporterManager
             throw new Exception("Name of the import is required, a complete import is currently not supported.");
         }
 
-        $found = false;
+        $found      = false;
         $definition = null;
         foreach ($this->definitions as $definition) {
             if ($type === $definition->getName()) {
@@ -83,17 +83,17 @@ readonly class FabricImporterManager
         /** @var FabricImporterDefinitionInterface $definition */
         $this->checkForDependedImports($definition);
 
-        $offset         = 0;
-        $isFirstTry     = true;
-        $syncDate       = new DateTime();
+        $offset     = 0;
+        $isFirstTry = true;
+        $syncDate   = new DateTime();
 
         $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
         if ($importConfig->isAllMode() === true) {
             $lastImportDate = null;
         }
 
-        $connection     = $this->managerRegistry->getConnection('fabric');
-        $importResult   = new ImportResult($definition);
+        $connection   = $this->managerRegistry->getConnection('fabric');
+        $importResult = new ImportResult($definition);
         while (true) {
             ['query' => $query, 'parameters' => $parameters]
                 = $this->queryProvider->buildQuery($definition, $offset, $lastImportDate);
@@ -150,14 +150,13 @@ readonly class FabricImporterManager
         }
 
         $timePassed = (time() - $startDate->getTimestamp());
-        $syncEntry = new FabricSync();
+        $syncEntry  = new FabricSync();
         $syncEntry
             ->setType($type)
             ->setLoadedAt($startDate)
             ->setSuccesses($importResult->getSuccess())
             ->setFailures($importResult->getErrors())
-            ->setExecTimeSeconds($timePassed)
-        ;
+            ->setExecTimeSeconds($timePassed);
         $this->em->persist($syncEntry);
         $this->em->flush();
     }
@@ -172,6 +171,13 @@ readonly class FabricImporterManager
     {
         $dependencies = $definition->getImportDependencies();
         $syncs        = $this->syncRepository->findLatestForAllTypes();
+        if (!empty($dependencies) && empty($syncs)) {
+            throw new ImporterDependencyException(
+                $definition->getName(),
+                $dependencies[0],
+                null
+            );
+        }
 
         foreach ($dependencies as $dep) {
             foreach ($syncs as $sync) {
