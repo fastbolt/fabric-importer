@@ -129,9 +129,9 @@ class ImportFromFabricCommand extends Command
                 },
                 static function (Throwable $exception) use ($io, $isDev) {
                        if ($isDev) {
-                           dump($exception->getMessage());
+                           dump($exception);
                        }
-                    $io->warning($exception);
+                    $io->warning($exception->getMessage());
                 }
             );
             $bar->finish();
