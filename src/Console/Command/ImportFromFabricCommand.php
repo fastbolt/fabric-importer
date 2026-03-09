@@ -13,6 +13,7 @@ use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\Exceptions\NoDataReceivedException;
 use Fastbolt\FabricImporter\FabricImporterManager;
+use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
@@ -51,12 +52,17 @@ class ImportFromFabricCommand extends Command
         $this
             ->addArgument('type', InputArgument::OPTIONAL, 'The import which you want to execute', '')
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode')
-            ->addOption('all', null, InputOption::VALUE_NONE, 'Request all data, regardless of the date of the last update');
+            ->addOption(
+                'all',
+                null,
+                InputOption::VALUE_NONE,
+                'Request all data, regardless of the date of the last update'
+            );
     }
 
     /**
-     * @param array<string, mixed>|null  $errors
-     * @param string|null $default
+     * @param array<string, mixed>|null $errors
+     * @param string|null               $default
      *
      * @return string
      */
@@ -78,7 +84,7 @@ class ImportFromFabricCommand extends Command
 //    }
 
     /**
-     * @param InputInterface  $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return int
@@ -90,9 +96,11 @@ class ImportFromFabricCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         /** @var string $type */
-        $type  = $input->getArgument('type');
-        $isDev = (bool) $input->getOption('dev');
-        $isAll = (bool) $input->getOption('all');
+        if (empty($type = $input->getArgument('type'))) {
+            return $this->showAvailableImportDefinitions($io);
+        }
+        $isDev = (bool)$input->getOption('dev');
+        $isAll = (bool)$input->getOption('all');
 
         try {
             $bar = new ProgressBar($output);
@@ -121,16 +129,18 @@ class ImportFromFabricCommand extends Command
 
                     if ($exception instanceof NoDataReceivedException) {
                         $io->warning($exception->getMessage());
+
                         return true;
                     }
 
                     $io->error($exception->getMessage());
+
                     return false;
                 },
                 static function (Throwable $exception) use ($io, $isDev) {
-                       if ($isDev) {
-                           dump($exception);
-                       }
+                    if ($isDev) {
+                        dump($exception);
+                    }
                     $io->warning($exception->getMessage());
                 }
             );
@@ -175,10 +185,41 @@ class ImportFromFabricCommand extends Command
             $rows[] = [
                 $result->getDefinition()->getName(),
                 $result->getSuccess(),
-                $result->getErrors()
+                $result->getErrors(),
             ];
         }
 
         return ['headers' => $headers, 'rows' => $rows];
+    }
+
+    /**
+     * @param SymfonyStyle $io
+     *
+     * @return int
+     */
+    private function showAvailableImportDefinitions(SymfonyStyle $io): int
+    {
+        $lastRuns = $this->syncRepository->findLatestForAllTypes();
+        $io->newLine();
+        $io->error('Please add `type` argument to specify which import you want to execute. Available importers:');
+        $io->table(
+            ['Name', 'Description', 'Last ran', 'Dependencies'],
+            array_map(
+                static function (FabricImporterDefinitionInterface $def) use ($lastRuns) {
+                    $lastRun = $lastRuns[$def->getName()] ?? null;
+
+                    return [
+                        $def->getName(),
+                        $def->getDescription(),
+                        $lastRun ? $lastRun?->format('Y-m-d H:i:s') : null,
+                        implode(',', $def->getImportDependencies()),
+                    ];
+                },
+                iterator_to_array($this->importManager->getImporterDefinitions())
+            )
+        );
+        $io->newLine();
+
+        return Command::FAILURE;
     }
 }

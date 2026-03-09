@@ -22,17 +22,16 @@ use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
 use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
-use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 readonly class FabricImporterManager
 {
     /**
-     * @param ManagerRegistry                             $managerRegistry
-     * @param FabricImporter                              $importer
-     * @param FabricSyncRepository                        $syncRepository
-     * @param EntityManagerInterface                      $em
-     * @param ImportQueryProvider                         $queryProvider
-     * @param iterable<FabricImporterDefinitionInterface> $definitions
+     * @param ManagerRegistry                                     $managerRegistry
+     * @param FabricImporter                                      $importer
+     * @param FabricSyncRepository                                $syncRepository
+     * @param EntityManagerInterface                              $em
+     * @param ImportQueryProvider                                 $queryProvider
+     * @param iterable<string, FabricImporterDefinitionInterface> $definitions
      */
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -40,7 +39,6 @@ readonly class FabricImporterManager
         private FabricSyncRepository $syncRepository,
         private EntityManagerInterface $em,
         private ImportQueryProvider $queryProvider,
-        #[AutowireIterator('fastbolt.fabric_importer')]
         private string $dependencyMaxAge,
         private iterable $definitions = [],
     ) {
@@ -168,7 +166,7 @@ readonly class FabricImporterManager
      */
     private function checkForDependedImports(FabricImporterDefinitionInterface $definition): void
     {
-        $dependencies = $definition->getImportDependencies();
+        $dependencies = $definition::getImportDependencies();
         $syncs        = $this->syncRepository->findLatestForAllTypes();
         $threshold    = new DateTime('-' . $this->dependencyMaxAge);
 
@@ -189,5 +187,13 @@ readonly class FabricImporterManager
                 );
             }
         }
+    }
+
+    /**
+     * @return iterable<string, FabricImporterDefinitionInterface>
+     */
+    public function getImporterDefinitions(): iterable
+    {
+        return $this->definitions;
     }
 }

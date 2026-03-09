@@ -20,7 +20,7 @@ interface FabricImporterDefinitionInterface
      *
      * @return string
      */
-    public function getName(): string;
+    public static function getName(): string;
 
     /**
      * The database and table (database.table) where the data is imported from
@@ -157,7 +157,7 @@ interface FabricImporterDefinitionInterface
      *
      * @return array<int, string>
      */
-    public function getImportDependencies(): array;
+    public static function getImportDependencies(): array;
 
     /**
      * Returns additional filters applied to the query, like "WHERE <filter_content>"
