@@ -28,7 +28,7 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     /**
      * @inheritDoc
      */
-    abstract public function getName(): string;
+    abstract public static function getName(): string;
 
     /**
      * @inheritDoc
@@ -167,7 +167,7 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     /**
      * @inheritDoc
      */
-    public function getImportDependencies(): array
+    public static function getImportDependencies(): array
     {
         return [];
     }

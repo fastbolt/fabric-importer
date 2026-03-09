@@ -14,7 +14,7 @@ use Fastbolt\FabricImporter\Types\FabricTableJoin;
 
 class DummyImporterDefinition extends FabricImporterDefinition
 {
-    public function getName(): string
+    public static function getName(): string
     {
         return 'dummy';
     }
