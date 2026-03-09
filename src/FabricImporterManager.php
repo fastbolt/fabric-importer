@@ -170,29 +170,22 @@ readonly class FabricImporterManager
     {
         $dependencies = $definition->getImportDependencies();
         $syncs        = $this->syncRepository->findLatestForAllTypes();
-        if (!empty($dependencies) && empty($syncs)) {
-            throw new ImporterDependencyException(
-                $definition->getName(),
-                $dependencies[0],
-                null
-            );
-        }
+        $threshold    = new DateTime('-' . $this->dependencyMaxAge);
 
         foreach ($dependencies as $dep) {
-            foreach ($syncs as $sync) {
-                if ($sync->getType() !== $dep) {
-                    continue;
-                }
-
-                $threshold = new DateTime('-' . $this->dependencyMaxAge);
-                if ($sync->getLoadedAt() && $sync->getLoadedAt() > $threshold) {
-                    continue 2;
-                }
-
+            if (null === ($lastSync = $syncs[$dep] ?? null)) {
                 throw new ImporterDependencyException(
                     $definition->getName(),
-                    $sync->getType(),
-                    $sync->getLoadedAt()
+                    $dep,
+                    null
+                );
+            }
+
+            if ($lastSync < $threshold) {
+                throw new ImporterDependencyException(
+                    $definition->getName(),
+                    $dep,
+                    $lastSync
                 );
             }
         }

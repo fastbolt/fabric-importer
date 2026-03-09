@@ -39,24 +39,20 @@ class FabricSyncRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return FabricSync[]
+     * @return array<string, DateTime>
      */
     public function findLatestForAllTypes(): array
     {
-        /** @var FabricSync[] $syncs */
-        $syncs = $this->createQueryBuilder('s')
-                      ->getQuery()
-                      ->getResult();
-
-        /** @var FabricSync[] $latest */
-        $latest = [];
-        foreach ($syncs as $sync) {
-            if (array_key_exists($sync->getType() ?? "", $latest)) {
-                if ($sync->getLoadedAt() > $latest[$sync->getType()]->getLoadedAt()) {
-                    continue;
-                }
-            }
-            $latest[$sync->getType()] = $sync;
+        /** @var array<string, array{type:string, max_loaded_at:string}> $latest */
+        $latest = $this->createQueryBuilder('s')
+                       ->select('s.type, MAX(s.loaded_at) as max_loaded_at')
+                       ->groupBy('s.type')
+                       ->indexBy('s', 's.type')
+                       ->getQuery()
+                       ->getArrayResult();
+        /** @var array<string, DateTime> $latest */
+        foreach ($latest as $type => $item) {
+            $latest[$type] = new DateTime($item['max_loaded_at']);
         }
 
         return $latest;
@@ -69,7 +65,7 @@ class FabricSyncRepository extends ServiceEntityRepository
      */
     public function reduceEntriesToLimit(int $entryLimit): void
     {
-        $all = $this->findBy([], ['loaded_at' => 'ASC']);
+        $all    = $this->findBy([], ['loaded_at' => 'ASC']);
         $excess = count($all) - $entryLimit;
         if ($excess <= 0) {
             return;
