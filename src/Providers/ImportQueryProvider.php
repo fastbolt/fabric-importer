@@ -44,9 +44,9 @@ class ImportQueryProvider
 
 
         $isFirstWhere   = true;
-        if ($lastImportDate !== null) {
+        if ($lastImportDate) {
             $query                        .= "WHERE $mainTableAlias.dwh_loaded_at > :lastImportDate";
-            $parameters['lastImportDate'] = $lastImportDate;
+            $parameters['lastImportDate'] = $lastImportDate->format('Y-m-d H:i:s');
             $isFirstWhere                 = false;
         }
 
