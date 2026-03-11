@@ -33,7 +33,7 @@ class FabricSyncRepository extends ServiceEntityRepository
      */
     public function findLastImportDate(string $type): ?DateTime
     {
-        $sync = $this->findOneBy(['type' => $type]);
+        $sync = $this->findOneBy(['type' => $type], ['loaded_at' => 'DESC']);
 
         return $sync?->getLoadedAt() ?? null;
     }
