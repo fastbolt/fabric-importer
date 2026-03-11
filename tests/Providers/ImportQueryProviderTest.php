@@ -45,6 +45,6 @@ class ImportQueryProviderTest extends TestCase
         $expectedQuery = $this->cleanString($expectedQuery);
         $query         = $this->cleanString($query);
         $this::assertEquals($expectedQuery, $query, 'Query not like expected.');
-        $this::assertEquals(['lastImportDate' => $date], $params, 'Params not as expected.');
+        $this::assertEquals(['lastImportDate' => $date->format('Y-m-d H:i:s')], $params, 'Params not as expected.');
     }
 }
