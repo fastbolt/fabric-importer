@@ -105,7 +105,15 @@ readonly class FabricImporterManager
 
             if (!$importedData) {
                 if ($isFirstTry) {
-                    $warningCallback(new Exception("Received data is empty for import of '$type'"));
+                    $warningCallback(
+                        new Exception(
+                            sprintf(
+                                "Received data is empty for import of '%s', last import date was '%s'",
+                                $type,
+                                $lastImportDate ? $lastImportDate->format('Y-m-d H:i:s') : 'never'
+                            )
+                        )
+                    );
                 }
                 break;
             }
