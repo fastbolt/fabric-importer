@@ -9,9 +9,7 @@
 namespace Fastbolt\FabricImporter\ImporterDefinitions;
 
 use Fastbolt\FabricImporter\Types\FabricTableJoin;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-#[AutoconfigureTag('fastbolt.fabric_importer')]
 interface FabricImporterDefinitionInterface
 {
     /**
@@ -20,7 +18,7 @@ interface FabricImporterDefinitionInterface
      *
      * @return string
      */
-    public static function getName(): string;
+    public function getName(): string;
 
     /**
      * The database and table (database.table) where the data is imported from
@@ -166,7 +164,7 @@ interface FabricImporterDefinitionInterface
      *
      * @return array<int, string>
      */
-    public static function getImportDependencies(): array;
+    public function getImportDependencies(): array;
 
     /**
      * Returns additional filters applied to the query, like "WHERE <filter_content>"

@@ -22,16 +22,17 @@ use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
 use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
+use InvalidArgumentException;
 
 readonly class FabricImporterManager
 {
     /**
-     * @param ManagerRegistry                                     $managerRegistry
-     * @param FabricImporter                                      $importer
-     * @param FabricSyncRepository                                $syncRepository
-     * @param EntityManagerInterface                              $em
-     * @param ImportQueryProvider                                 $queryProvider
-     * @param iterable<string, FabricImporterDefinitionInterface> $definitions
+     * @param ManagerRegistry                             $managerRegistry
+     * @param FabricImporter                              $importer
+     * @param FabricSyncRepository                        $syncRepository
+     * @param EntityManagerInterface                      $em
+     * @param ImportQueryProvider                         $queryProvider
+     * @param iterable<FabricImporterDefinitionInterface> $definitions
      */
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -50,7 +51,8 @@ readonly class FabricImporterManager
      * @param Closure             $errorCallback
      * @param Closure             $warningCallback
      *
-     * @return ImportResult[]
+     * @return ImportResult
+     *
      * @throws ImporterDependencyException
      * @throws \Doctrine\DBAL\Exception
      */
@@ -59,10 +61,10 @@ readonly class FabricImporterManager
         Closure $statusCallback,
         Closure $errorCallback,
         Closure $warningCallback
-    ): array {
+    ): ImportResult {
         $type = $importConfig->getType();
         if (!$type) {
-            throw new Exception("Name of the import is required, a complete import is currently not supported.");
+            throw new InvalidArgumentException("Name of the import is required");
         }
 
         $found      = false;
@@ -86,7 +88,7 @@ readonly class FabricImporterManager
         $syncDate   = new DateTime();
 
         $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
-        if ($importConfig->isAllMode() === true) {
+        if ($importConfig->isFullSync() === true) {
             $lastImportDate = null;
         }
 
@@ -133,7 +135,7 @@ readonly class FabricImporterManager
 
         $this->saveSyncEntry($type, $syncDate, $importResult, $importConfig);
 
-        return [$importResult];
+        return $importResult;
     }
 
     /**
@@ -174,7 +176,7 @@ readonly class FabricImporterManager
      */
     private function checkForDependedImports(FabricImporterDefinitionInterface $definition): void
     {
-        $dependencies = $definition::getImportDependencies();
+        $dependencies = $definition->getImportDependencies();
         $syncs        = $this->syncRepository->findLatestForAllTypes();
         $threshold    = new DateTime('-' . $this->dependencyMaxAge);
 
@@ -198,7 +200,7 @@ readonly class FabricImporterManager
     }
 
     /**
-     * @return iterable<string, FabricImporterDefinitionInterface>
+     * @return iterable<FabricImporterDefinitionInterface>
      */
     public function getImporterDefinitions(): iterable
     {

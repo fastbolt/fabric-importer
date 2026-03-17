@@ -10,6 +10,7 @@ services:
             $importManager: '@Fastbolt\FabricImporter\FabricImporterManager'
             $syncRepository: '@Fastbolt\FabricImporter\Repository\FabricSyncRepository'
             $entryLimit: '%fabric_importer.sync_entry_limit%'
+            $dependencyManager: '@Fastbolt\FabricImporter\ImportDependencyManager'
 
     Fastbolt\FabricImporter\FabricImporterManager:
         $managerRegistry: '@doctrine'
@@ -18,7 +19,7 @@ services:
         $em: '@doctrine.orm.entity_manager'
         $queryProvider: '@Fastbolt\FabricImporter\Providers\ImportQueryProvider'
         $dependencyMaxAge: '%fabric_importer.dependency_import_max_age%'
-        $definitions: !tagged_iterator { tag: 'fastbolt.fabric_importer', default_index_method: 'getName' }
+        $definitions: !tagged_iterator { tag: 'fastbolt.fabric_importer' }
 
     Fastbolt\FabricImporter\FabricImporter:
         $entityManager: '@doctrine.orm.entity_manager'
@@ -29,3 +30,6 @@ services:
 
     Fastbolt\FabricImporter\Repository\FabricSyncRepository:
         $registry: '@doctrine'
+
+    Fastbolt\FabricImporter\ImportDependencyManager:
+        $definitions: !tagged_iterator { tag: 'fastbolt.fabric_importer' }

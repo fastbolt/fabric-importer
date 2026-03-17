@@ -11,7 +11,7 @@ The library is tested with PHP 8.2 and 8.3 and relies on doctrine.
 
 The library can be installed via composer:
 
-```
+```console
 composer require fastbolt/fabric-importer
 ```
 
@@ -44,11 +44,14 @@ return [
 ];
 ```
 
-Add a config/fabric_importer.yaml. 'database_url' is required.
+Add a `config/fabric_importer.yaml`.
 ```yaml
     fabric_importer:
+        # Required: Database DSN used for establishing PDO connection.
         database_url : "sqlsrv://<user>@<host>.fabric.microsoft.com?serverVersion=<version>.8&Encrypt=true&TrustServerCertificate=true&dbname=lake_silver&charset=&port=1433&driverOptions[Authentication]=ActiveDirectoryPassword&driverOptions[MultipleActiveResultSets]=0&driverOptions[Encrypt]=1&driverOptions[TrustServerCertificate]=1"
+        # Optional: Maximum age of last import for dependencies. Default is 1 hour.
         dependency_import_max_age: '1 hour'
+        # Optional: Maximum number of entries in the fabric_syncs table. Default is 100.
         sync_entry_limit: 100
 ```
 
@@ -73,18 +76,21 @@ doctrine:
 
 ## Initialization
 
-Run this command to create the fabric_syncs table in your database. Every time an import ran, a save will be added to this table. Then the oldest entries are deleted.
+Run this command to create the `fabric_syncs` table in your database. Every time an import ran, a save will be added to this table. Then the oldest entries are deleted.
+
 ```console
 php bin/console fabric-importer:init
 ```
 
 ## Usage
 Run this command to import the data
-´´´console
-php bin/console fabric-importer:import <import name>
-´´´
 
-To define an import, extend the FabricImporterDefinition and implement its methods. Here is an example. 
+```console
+php bin/console fabric-importer:import <import name>
+```
+
+To define an import, extend the `FabricImporterDefinition` and implement / overwrite its methods. Here is an example.
+
 ```php
 <?php
 
