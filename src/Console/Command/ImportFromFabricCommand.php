@@ -162,7 +162,13 @@ class ImportFromFabricCommand extends Command
             return Command::FAILURE;
         }
 
+        if (count($types) > 1) {
+            $io->info(sprintf('Importing all types in the following order: %s', implode(', ', $types)));
+        }
+
         foreach ($types as $type) {
+            $io->title(sprintf('Executing import for type %s', $type));
+
             $importConfig = new ImportConfiguration(
                 $type,
                 $isDev,
@@ -172,7 +178,7 @@ class ImportFromFabricCommand extends Command
 
             try {
                 $this->executeSingle($output, $importConfig, $io, $isDev);
-            } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
+            } catch (ImporterDefinitionNotFoundException|ImporterDependencyException $exception) {
                 $io->newLine(2);
                 $io->error($exception->getMessage());
                 $io->newLine();
