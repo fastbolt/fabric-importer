@@ -35,6 +35,12 @@ use Throwable;
 )]
 class ImportFromFabricCommand extends Command
 {
+    /**
+     * @param FabricImporterManager   $importManager
+     * @param FabricSyncRepository    $syncRepository
+     * @param ImportDependencyManager $dependencyManager
+     * @param int                     $entryLimit
+     */
     public function __construct(
         private readonly FabricImporterManager $importManager,
         private readonly FabricSyncRepository $syncRepository,
@@ -178,7 +184,7 @@ class ImportFromFabricCommand extends Command
 
             try {
                 $this->executeSingle($output, $importConfig, $io, $isDev);
-            } catch (ImporterDefinitionNotFoundException|ImporterDependencyException $exception) {
+            } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
                 $io->newLine(2);
                 $io->error($exception->getMessage());
                 $io->newLine();
