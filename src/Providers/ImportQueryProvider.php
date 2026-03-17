@@ -10,6 +10,7 @@ namespace Fastbolt\FabricImporter\Providers;
 
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use DateTimeInterface;
+use InvalidArgumentException;
 
 class ImportQueryProvider
 {
@@ -28,7 +29,15 @@ class ImportQueryProvider
         $parameters = [];
 
         $table          = $definition->getSourceTable();
-        $mainTableAlias = 't';
+        $mainTableAlias = $definition->getSourceTableAlias();
+
+        // Check that $mainTableAlias only contains lower- and uppercase letters and numbers, and no special characters
+        // to prevent syntax errors and SQL injection, as it is directly injected into the query and cannot be parameterized
+        if (!preg_match('/^[a-zA-Z0-9]+$/', $mainTableAlias)) {
+            throw new InvalidArgumentException(
+                "The main table alias '$mainTableAlias' is not valid. It can only contain letters and numbers."
+            );
+        }
 
         $fields = $this->getFields($definition, $mainTableAlias);
 
@@ -42,8 +51,7 @@ class ImportQueryProvider
                   FROM $table $mainTableAlias 
                   $joinPart ";
 
-
-        $isFirstWhere   = true;
+        $isFirstWhere = true;
         if ($lastImportDate) {
             $query                        .= "WHERE $mainTableAlias.dwh_loaded_at > :lastImportDate";
             $parameters['lastImportDate'] = $lastImportDate->format('Y-m-d H:i:s');
@@ -72,7 +80,7 @@ class ImportQueryProvider
 
         return [
             'query'      => $query,
-            'parameters' => $parameters
+            'parameters' => $parameters,
         ];
     }
 
@@ -89,7 +97,7 @@ class ImportQueryProvider
         //main table fields
         $fields = [
             ...array_keys($definition->getIdentifierMapping()),
-            ...array_keys($definition->getFieldNameMapping())
+            ...array_keys($definition->getFieldNameMapping()),
         ];
         foreach ($fields as &$field) {
             $field = "$mainTableAlias.$field AS $field";
@@ -99,9 +107,9 @@ class ImportQueryProvider
         foreach ($definition->getTableJoins() as $join) {
             $joinTableAlias = $join->getTableAlias();
             foreach ($join->getSelects() as $select) {
-                $joinField = $select->getField();
+                $joinField  = $select->getField();
                 $fieldAlias = $select->getTargetField();
-                $fields[] = "$joinTableAlias.$joinField AS $fieldAlias";
+                $fields[]   = "$joinTableAlias.$joinField AS $fieldAlias";
             }
         }
 
