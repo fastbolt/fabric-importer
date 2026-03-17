@@ -158,7 +158,7 @@ class ImportFromFabricCommand extends Command
                 ? $this->dependencyManager->getNamesInDependencyAwareOrder()
                 : [$type];
         } catch (CircularDependencyException $circularDependencyException) {
-            $io->newLine(2);
+            $io->newLine();
             $io->error($circularDependencyException->getMessage());
 
             return Command::FAILURE;
@@ -182,7 +182,7 @@ class ImportFromFabricCommand extends Command
             try {
                 $results[] = $this->executeSingle($output, $importConfig, $io, $isDev);
             } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
-                $io->newLine(2);
+                $io->newLine();
                 $io->error($exception->getMessage());
                 $io->newLine();
                 $this->showAvailableImportDefinitions($io);
@@ -198,7 +198,6 @@ class ImportFromFabricCommand extends Command
             $table['headers'],
             $table['rows']
         );
-        $io->newLine();
 
         return Command::SUCCESS;
     }
@@ -253,7 +252,6 @@ class ImportFromFabricCommand extends Command
                 iterator_to_array($this->importManager->getImporterDefinitions())
             )
         );
-        $io->newLine();
 
         return Command::FAILURE;
     }
