@@ -149,13 +149,15 @@ class ImportFromFabricCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $isAllTypes = (bool)$input->getOption('all');
         /** @var string $type */
-        if (empty($type = $input->getArgument('type'))) {
+        if (!$isAllTypes && empty($type = $input->getArgument('type'))) {
+            $io->error('Please add `type` argument to specify which import you want to execute. Available importers:');
+
             return $this->showAvailableImportDefinitions($io);
         }
         $isDev      = (bool)$input->getOption('dev');
         $isFullSync = (bool)$input->getOption('full');
-        $isAllTypes = (bool)$input->getOption('all');
 
         try {
             $types = $isAllTypes
@@ -231,7 +233,6 @@ class ImportFromFabricCommand extends Command
     {
         $lastRuns = $this->syncRepository->findLatestForAllTypes();
         $io->newLine();
-        $io->error('Please add `type` argument to specify which import you want to execute. Available importers:');
         $io->table(
             ['Name', 'Description', 'Last ran', 'Dependencies'],
             array_map(
