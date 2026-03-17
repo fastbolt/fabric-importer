@@ -30,6 +30,14 @@ interface FabricImporterDefinitionInterface
     public function getSourceTable(): string;
 
     /**
+     * The alias used for the source table in the query. Must be used in the join definitions and filters.
+     * Defaults to "t" if not overwritten.
+     *
+     * @return string
+     */
+    public function getSourceTableAlias(): string;
+
+    /**
      * The name of the table the data will be saved to
      *
      * @return string
@@ -123,7 +131,8 @@ interface FabricImporterDefinitionInterface
     public function getJoinedFields(): array;
 
     /**
-     * Returns all fields on the target table that are not identifier fields (combined from joined, field-mapping and default value fields)
+     * Returns all fields on the target table that are not identifier fields (combined from joined, field-mapping and
+     * default value fields)
      *
      * @return string[]
      */
@@ -152,8 +161,8 @@ interface FabricImporterDefinitionInterface
      * TODO we could try to make the importers with dependencies only import items that have
      *  changed before the tables this entity depends on has changed so we never get orphaned data
      *
-     * Returns the names of all importers that must run before this one because it is dependent on data from those imports.
-     * Importers must have run in the last hour.
+     * Returns the names of all importers that must run before this one because it is dependent on data from those
+     * imports. Importers must have run in the last hour.
      *
      * @return array<int, string>
      */

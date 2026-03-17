@@ -187,4 +187,12 @@ abstract class FabricImporterDefinition implements FabricImporterDefinitionInter
     {
         return $item;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSourceTableAlias(): string
+    {
+        return 't';
+    }
 }
