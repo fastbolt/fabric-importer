@@ -9,7 +9,6 @@
 namespace Fastbolt\FabricImporter\ImporterDefinitions;
 
 use Fastbolt\FabricImporter\Types\FabricTableJoin;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 interface FabricImporterDefinitionInterface
 {

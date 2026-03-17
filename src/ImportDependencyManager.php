@@ -5,7 +5,7 @@ namespace Fastbolt\FabricImporter;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use LogicException;
 
-class ImportDependencyManager
+readonly class ImportDependencyManager
 {
     /**
      * @param iterable<FabricImporterDefinitionInterface> $definitions
@@ -15,6 +15,9 @@ class ImportDependencyManager
     ) {
     }
 
+    /**
+     * @return string[]
+     */
     public function getNamesInDependencyAwareOrder(): array
     {
         $dependencies = $this->getDependencies();
@@ -23,8 +26,8 @@ class ImportDependencyManager
     }
 
     /**
-     * @return array<string, string[]]> Array with definition names as keys and an array of
-     * the names of the definitions they depend on as values
+     * @return array<string, string[]> Array with definition names as keys and an array of the names of the definitions
+     *                       they depend on as values
      */
     private function getDependencies(): array
     {
@@ -39,6 +42,12 @@ class ImportDependencyManager
         return $result;
     }
 
+    /**
+     * @param array<string, string[]> $dependenciesToCheck
+     * @param string[]                $namesOrdered
+     *
+     * @return string[]
+     */
     private function resolveDependencies(array &$dependenciesToCheck, array &$namesOrdered = []): array
     {
         $removed = [];
