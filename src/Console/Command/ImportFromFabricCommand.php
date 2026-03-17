@@ -64,12 +64,12 @@ class ImportFromFabricCommand extends Command
             )
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode')
             ->addOption(
-                'all',
+                'full',
                 null,
                 InputOption::VALUE_NONE,
                 'Request all data, regardless of the date of the last update'
             )
-            ->addOption('all-types', 'a', InputOption::VALUE_NONE, 'Execute all import types, one after another.');
+            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Execute all import types, one after another.');
     }
 
     /**
