@@ -181,7 +181,7 @@ class ImportFromFabricCommand extends Command
 
             try {
                 $results[] = $this->executeSingle($output, $importConfig, $io, $isDev);
-            } catch (ImporterDefinitionNotFoundException|ImporterDependencyException $exception) {
+            } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
                 $io->newLine(2);
                 $io->error($exception->getMessage());
                 $io->newLine();
