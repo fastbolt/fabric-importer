@@ -22,6 +22,7 @@ use Fastbolt\FabricImporter\Providers\ImportQueryProvider;
 use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
 use Fastbolt\FabricImporter\Types\ImportResult;
+use InvalidArgumentException;
 
 readonly class FabricImporterManager
 {
@@ -50,7 +51,8 @@ readonly class FabricImporterManager
      * @param Closure             $errorCallback
      * @param Closure             $warningCallback
      *
-     * @return ImportResult[]
+     * @return ImportResult
+     *
      * @throws ImporterDependencyException
      * @throws \Doctrine\DBAL\Exception
      */
@@ -59,10 +61,10 @@ readonly class FabricImporterManager
         Closure $statusCallback,
         Closure $errorCallback,
         Closure $warningCallback
-    ): array {
+    ): ImportResult {
         $type = $importConfig->getType();
         if (!$type) {
-            throw new Exception("Name of the import is required, a complete import is currently not supported.");
+            throw new InvalidArgumentException("Name of the import is required");
         }
 
         $found      = false;
@@ -133,7 +135,7 @@ readonly class FabricImporterManager
 
         $this->saveSyncEntry($type, $syncDate, $importResult, $importConfig);
 
-        return [$importResult];
+        return $importResult;
     }
 
     /**

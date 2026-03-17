@@ -78,7 +78,8 @@ class ImportFromFabricCommand extends Command
      * @param SymfonyStyle        $io
      * @param bool                $isDev
      *
-     * @return void
+     * @return ImportResult
+     *
      * @throws Exception
      * @throws ImporterDependencyException
      */
@@ -87,11 +88,11 @@ class ImportFromFabricCommand extends Command
         ImportConfiguration $importConfig,
         SymfonyStyle $io,
         bool $isDev
-    ): void {
+    ): ImportResult {
         $bar = new ProgressBar($output);
         $bar->setRedrawFrequency(100);
 
-        $results = $this->importManager->import(
+        $result = $this->importManager->import(
             $importConfig,
             static function (int $steps = 1) use ($bar) {
                 $bar->advance($steps);
@@ -127,14 +128,7 @@ class ImportFromFabricCommand extends Command
 
         $this->syncRepository->reduceEntriesToLimit($this->entryLimit);
 
-        $table = $this->getResultTable($results);
-
-        $io->newLine();
-        $io->table(
-            $table['headers'],
-            $table['rows']
-        );
-        $io->newLine();
+        return $result;
     }
 
     /**
@@ -174,8 +168,9 @@ class ImportFromFabricCommand extends Command
             $io->info(sprintf('Importing all types in the following order: %s', implode(', ', $types)));
         }
 
+        $results = [];
         foreach ($types as $type) {
-            $io->title(sprintf('Executing import for type %s', $type));
+            $io->info(sprintf('Executing import for type %s', $type));
 
             $importConfig = new ImportConfiguration(
                 $type,
@@ -185,8 +180,8 @@ class ImportFromFabricCommand extends Command
             );
 
             try {
-                $this->executeSingle($output, $importConfig, $io, $isDev);
-            } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
+                $results[] = $this->executeSingle($output, $importConfig, $io, $isDev);
+            } catch (ImporterDefinitionNotFoundException|ImporterDependencyException $exception) {
                 $io->newLine(2);
                 $io->error($exception->getMessage());
                 $io->newLine();
@@ -195,6 +190,15 @@ class ImportFromFabricCommand extends Command
                 return Command::FAILURE;
             }
         }
+
+        $table = $this->getResultTable($results);
+
+        $io->newLine();
+        $io->table(
+            $table['headers'],
+            $table['rows']
+        );
+        $io->newLine();
 
         return Command::SUCCESS;
     }
