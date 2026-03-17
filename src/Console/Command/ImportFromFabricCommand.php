@@ -9,10 +9,12 @@
 namespace Fastbolt\FabricImporter\Console\Command;
 
 use Doctrine\DBAL\Exception;
+use Fastbolt\FabricImporter\Exceptions\CircularDependencyException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\Exceptions\ImporterDependencyException;
 use Fastbolt\FabricImporter\Exceptions\NoDataReceivedException;
 use Fastbolt\FabricImporter\FabricImporterManager;
+use Fastbolt\FabricImporter\ImportDependencyManager;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 use Fastbolt\FabricImporter\Repository\FabricSyncRepository;
 use Fastbolt\FabricImporter\Types\ImportConfiguration;
@@ -33,12 +35,10 @@ use Throwable;
 )]
 class ImportFromFabricCommand extends Command
 {
-    /**
-     * @param FabricImporterManager $importManager
-     */
     public function __construct(
         private readonly FabricImporterManager $importManager,
         private readonly FabricSyncRepository $syncRepository,
+        private readonly ImportDependencyManager $dependencyManager,
         private int $entryLimit
     ) {
         parent::__construct();
@@ -50,41 +50,89 @@ class ImportFromFabricCommand extends Command
     public function configure(): void
     {
         $this
-            ->addArgument('type', InputArgument::OPTIONAL, 'The import which you want to execute', '')
+            ->addArgument(
+                'type',
+                InputArgument::OPTIONAL,
+                'The import which you want to execute.',
+                ''
+            )
             ->addOption('dev', null, InputOption::VALUE_NONE, 'Development mode')
             ->addOption(
                 'all',
                 null,
                 InputOption::VALUE_NONE,
                 'Request all data, regardless of the date of the last update'
-            );
+            )
+            ->addOption('all-types', 'a', InputOption::VALUE_NONE, 'Execute all import types, one after another.');
     }
 
     /**
-     * @param array<string, mixed>|null $errors
-     * @param string|null               $default
+     * @param OutputInterface     $output
+     * @param ImportConfiguration $importConfig
+     * @param SymfonyStyle        $io
+     * @param bool                $isDev
      *
-     * @return string
+     * @return void
+     * @throws Exception
+     * @throws ImporterDependencyException
      */
-//    private function formatErrors(?array $errors, ?string $default = null): string
-//    {
-//        $message = "SQL Error - Error information:\n";
-//
-//        if (!empty($errors)) {
-//            foreach ($errors as $error) {
-//                $message .= '\nSQLSTATE: ' . $error['SQLSTATE'];
-//                $message .= '\nCode: ' . $error['code'];
-//                $message .= '\nMessage: ' . $error['message'];
-//            }
-//        } else {
-//            $message .= $default ?? "No information\n";
-//        }
-//
-//        return $message;
-//    }
+    private function executeSingle(
+        OutputInterface $output,
+        ImportConfiguration $importConfig,
+        SymfonyStyle $io,
+        bool $isDev
+    ): void {
+        $bar = new ProgressBar($output);
+        $bar->setRedrawFrequency(100);
+
+        $results = $this->importManager->import(
+            $importConfig,
+            static function (int $steps = 1) use ($bar) {
+                $bar->advance($steps);
+
+                return true;
+            },
+            static function (Throwable $exception) use ($io, $isDev) {
+                if ($isDev) {
+                    dump($exception->getMessage());
+                }
+                if ($exception instanceof ImporterDefinitionNotFoundException) {
+                    throw $exception;
+                }
+
+                if ($exception instanceof NoDataReceivedException) {
+                    $io->warning($exception->getMessage());
+
+                    return true;
+                }
+
+                $io->error($exception->getMessage());
+
+                return false;
+            },
+            static function (Throwable $exception) use ($io, $isDev) {
+                if ($isDev) {
+                    dump($exception);
+                }
+                $io->warning($exception->getMessage());
+            }
+        );
+        $bar->finish();
+
+        $this->syncRepository->reduceEntriesToLimit($this->entryLimit);
+
+        $table = $this->getResultTable($results);
+
+        $io->newLine();
+        $io->table(
+            $table['headers'],
+            $table['rows']
+        );
+        $io->newLine();
+    }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
      *
      * @return int
@@ -99,69 +147,39 @@ class ImportFromFabricCommand extends Command
         if (empty($type = $input->getArgument('type'))) {
             return $this->showAvailableImportDefinitions($io);
         }
-        $isDev = (bool)$input->getOption('dev');
-        $isAll = (bool)$input->getOption('all');
+        $isDev      = (bool)$input->getOption('dev');
+        $isFullSync = (bool)$input->getOption('full');
+        $isAllTypes = (bool)$input->getOption('all');
 
         try {
-            $bar = new ProgressBar($output);
-            $bar->setRedrawFrequency(100);
+            $types = $isAllTypes
+                ? $this->dependencyManager->getNamesInDependencyAwareOrder()
+                : [$type];
+        } catch (CircularDependencyException $circularDependencyException) {
+            $io->newLine(2);
+            $io->error($circularDependencyException->getMessage());
 
+            return Command::FAILURE;
+        }
+
+        foreach ($types as $type) {
             $importConfig = new ImportConfiguration(
                 $type,
                 $isDev,
-                $isAll
+                $isFullSync,
+                $isAllTypes
             );
 
-            $results = $this->importManager->import(
-                $importConfig,
-                static function (int $steps = 1) use ($bar) {
-                    $bar->advance($steps);
+            try {
+                $this->executeSingle($output, $importConfig, $io, $isDev);
+            } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
+                $io->newLine(2);
+                $io->error($exception->getMessage());
+                $io->newLine();
+                $this->showAvailableImportDefinitions($io);
 
-                    return true;
-                },
-                static function (Throwable $exception) use ($io, $isDev) {
-                    if ($isDev) {
-                        dump($exception->getMessage());
-                    }
-                    if ($exception instanceof ImporterDefinitionNotFoundException) {
-                        throw $exception;
-                    }
-
-                    if ($exception instanceof NoDataReceivedException) {
-                        $io->warning($exception->getMessage());
-
-                        return true;
-                    }
-
-                    $io->error($exception->getMessage());
-
-                    return false;
-                },
-                static function (Throwable $exception) use ($io, $isDev) {
-                    if ($isDev) {
-                        dump($exception);
-                    }
-                    $io->warning($exception->getMessage());
-                }
-            );
-            $bar->finish();
-
-            $this->syncRepository->reduceEntriesToLimit($this->entryLimit);
-
-            $table = $this->getResultTable($results);
-
-            $io->newLine();
-            $io->table(
-                $table['headers'],
-                $table['rows']
-            );
-        } catch (ImporterDefinitionNotFoundException | ImporterDependencyException $exception) {
-            $io->newLine(2);
-            $io->error($exception->getMessage());
-
-//            $this->helpRenderer->render($io);
-
-            return Command::FAILURE;
+                return Command::FAILURE;
+            }
         }
 
         return Command::SUCCESS;

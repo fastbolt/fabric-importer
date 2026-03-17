@@ -7,12 +7,13 @@ readonly class ImportConfiguration
     /**
      * @param string $type
      * @param bool   $isDev
-     * @param bool   $isAll
+     * @param bool   $isFullSync
      */
     public function __construct(
         private string $type,
         private bool $isDev,
-        private bool $isAll,
+        private bool $isFullSync,
+        private bool $isAllTypes
     ) {
     }
 
@@ -35,8 +36,16 @@ readonly class ImportConfiguration
     /**
      * @return bool
      */
-    public function isAllMode(): bool
+    public function isFullSync(): bool
     {
-        return $this->isAll;
+        return $this->isFullSync;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAllTypes(): bool
+    {
+        return $this->isAllTypes;
     }
 }

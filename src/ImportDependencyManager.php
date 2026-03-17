@@ -2,8 +2,8 @@
 
 namespace Fastbolt\FabricImporter;
 
+use Fastbolt\FabricImporter\Exceptions\CircularDependencyException;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
-use LogicException;
 
 readonly class ImportDependencyManager
 {
@@ -17,6 +17,8 @@ readonly class ImportDependencyManager
 
     /**
      * @return string[]
+     *
+     * @throws CircularDependencyException
      */
     public function getNamesInDependencyAwareOrder(): array
     {
@@ -63,9 +65,7 @@ readonly class ImportDependencyManager
 
         // Erst Test implementieren - das sollte rekursive Abhängigkeiten verhindern
         if (empty($removed)) {
-            throw new LogicException(
-                'Recursion detected in importer dependencies. Please check the importer definitions for circular dependencies.'
-            );
+            throw new CircularDependencyException();
         }
 
         foreach ($dependenciesToCheck as $name => $itemDependencies) {

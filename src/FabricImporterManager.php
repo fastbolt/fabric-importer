@@ -86,7 +86,7 @@ readonly class FabricImporterManager
         $syncDate   = new DateTime();
 
         $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
-        if ($importConfig->isAllMode() === true) {
+        if ($importConfig->isFullSync() === true) {
             $lastImportDate = null;
         }
 

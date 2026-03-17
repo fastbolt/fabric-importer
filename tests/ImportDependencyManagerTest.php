@@ -2,14 +2,14 @@
 
 namespace Fastbolt\FabricImporter\Tests;
 
+use Fastbolt\FabricImporter\Exceptions\CircularDependencyException;
 use Fastbolt\FabricImporter\ImportDependencyManager;
 use Fastbolt\FabricImporter\Tests\_Helpers\GenericDummyImporterDefinition;
-use LogicException;
 use PHPUnit\Framework\TestCase;
 
 class ImportDependencyManagerTest extends TestCase
 {
-    public function testGetNamesInDependencyAwareOrderCompleteDefinition()
+    public function testGetNamesInDependencyAwareOrderCompleteDefinition(): void
     {
         $definitions = [
             new GenericDummyImporterDefinition('customers', []),
@@ -28,12 +28,9 @@ class ImportDependencyManagerTest extends TestCase
         );
     }
 
-    public function testGetNamesInDependencyAwareOrderCompleteDefinitionRecursionError()
+    public function testGetNamesInDependencyAwareOrderCompleteDefinitionRecursionError(): void
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage(
-            'Recursion detected in importer dependencies. Please check the importer definitions for circular dependencies.'
-        );
+        $this->expectException(CircularDependencyException::class);
 
         $definitions = [
             new GenericDummyImporterDefinition('customers', ['orders']),
