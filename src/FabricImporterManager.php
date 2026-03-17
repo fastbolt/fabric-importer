@@ -26,12 +26,12 @@ use Fastbolt\FabricImporter\Types\ImportResult;
 readonly class FabricImporterManager
 {
     /**
-     * @param ManagerRegistry                                     $managerRegistry
-     * @param FabricImporter                                      $importer
-     * @param FabricSyncRepository                                $syncRepository
-     * @param EntityManagerInterface                              $em
-     * @param ImportQueryProvider                                 $queryProvider
-     * @param iterable<string, FabricImporterDefinitionInterface> $definitions
+     * @param ManagerRegistry                             $managerRegistry
+     * @param FabricImporter                              $importer
+     * @param FabricSyncRepository                        $syncRepository
+     * @param EntityManagerInterface                      $em
+     * @param ImportQueryProvider                         $queryProvider
+     * @param iterable<FabricImporterDefinitionInterface> $definitions
      */
     public function __construct(
         private ManagerRegistry $managerRegistry,
@@ -174,7 +174,7 @@ readonly class FabricImporterManager
      */
     private function checkForDependedImports(FabricImporterDefinitionInterface $definition): void
     {
-        $dependencies = $definition::getImportDependencies();
+        $dependencies = $definition->getImportDependencies();
         $syncs        = $this->syncRepository->findLatestForAllTypes();
         $threshold    = new DateTime('-' . $this->dependencyMaxAge);
 
@@ -198,7 +198,7 @@ readonly class FabricImporterManager
     }
 
     /**
-     * @return iterable<string, FabricImporterDefinitionInterface>
+     * @return iterable<FabricImporterDefinitionInterface>
      */
     public function getImporterDefinitions(): iterable
     {

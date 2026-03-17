@@ -9,53 +9,45 @@
 namespace Fastbolt\FabricImporter\Tests\_Helpers;
 
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinition;
-use Fastbolt\FabricImporter\Types\FabricJoinedSelect;
-use Fastbolt\FabricImporter\Types\FabricTableJoin;
 
-class DummyImporterDefinition extends FabricImporterDefinition
+class GenericDummyImporterDefinition extends FabricImporterDefinition
 {
-    public function getName(): string
-    {
-        return 'dummy';
+    public function __construct(
+        private readonly string $name,
+        private readonly array $dependencies = [],
+    ) {
+        parent::__construct();
     }
 
-    public function getTableJoinsDefinitions(): array
+    public function getName(): string
     {
-        return [
-            new FabricTableJoin(
-                'ham',
-                'h',
-                'testCondition',
-                'RIGHT',
-                [
-                    new FabricJoinedSelect(
-                        'eggs',
-                        'eggTarget'
-                    )
-                ]
-            )
-        ];
+        return $this->name;
+    }
+
+    public function getImportDependencies(): array
+    {
+        return $this->dependencies;
     }
 
     public function getSourceTable(): string
     {
-        return 'dummy_table';
+        return $this->name . '_table';
     }
 
     public function getTargetTable(): string
     {
-        return 'dummy_table_target';
+        return $this->name . 'table_target';
     }
 
     public function getDescription(): string
     {
-        return 'A dummy instance of the FabricImporterDefinition';
+        return sprintf('A %s instance of the FabricImporterDefinition', $this->name);
     }
 
     public function getIdentifierMapping(): array
     {
         return [
-            'foo_a' => 'foo_b'
+            'foo_a' => 'foo_b',
         ];
     }
 
@@ -63,7 +55,7 @@ class DummyImporterDefinition extends FabricImporterDefinition
     {
         return [
             'field1_a' => 'field1_b',
-            'field2_a' => 'field2_b'
+            'field2_a' => 'field2_b',
         ];
     }
 
