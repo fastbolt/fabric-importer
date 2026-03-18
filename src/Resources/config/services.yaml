@@ -20,6 +20,7 @@ services:
         $queryProvider: '@Fastbolt\FabricImporter\Providers\ImportQueryProvider'
         $dependencyMaxAge: '%fabric_importer.dependency_import_max_age%'
         $definitions: !tagged_iterator { tag: 'fastbolt.fabric_importer' }
+        $sourceTimeZone: '%fabric_importer.source_timezone%'
 
     Fastbolt\FabricImporter\FabricImporter:
         $entityManager: '@doctrine.orm.entity_manager'
