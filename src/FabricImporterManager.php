@@ -10,6 +10,7 @@ namespace Fastbolt\FabricImporter;
 
 use Closure;
 use DateTime;
+use DateTimeZone;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -41,6 +42,7 @@ readonly class FabricImporterManager
         private EntityManagerInterface $em,
         private ImportQueryProvider $queryProvider,
         private string $dependencyMaxAge,
+        private string $sourceTimeZone,
         private iterable $definitions = [],
     ) {
     }
@@ -90,6 +92,9 @@ readonly class FabricImporterManager
         $lastImportDate = $this->syncRepository->findLastImportDate($definition->getName());
         if ($importConfig->isFullSync() === true) {
             $lastImportDate = null;
+        }
+        if (null !== $lastImportDate && !empty($this->sourceTimeZone)) {
+            $lastImportDate->setTimezone(new DateTimeZone($this->sourceTimeZone));
         }
 
         $connection   = $this->managerRegistry->getConnection('fabric');

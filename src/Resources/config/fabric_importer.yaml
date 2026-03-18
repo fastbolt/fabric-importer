@@ -3,3 +3,4 @@ fabric_importer:
     database_url : ""
     dependency_import_max_age: '1 hour'
     sync_entry_limit: 100
+    source_timezone: 'UTC'

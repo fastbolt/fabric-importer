@@ -26,13 +26,16 @@ class Configuration implements ConfigurationInterface
         $treeBuilder->getRootNode()
                     ->children()
                     ->integerNode('sync_entry_limit')
-                        ->defaultValue(100)
-                        ->end()
+                    ->defaultValue(100)
+                    ->end()
                     ->scalarNode('dependency_import_max_age')
-                        ->defaultValue('1 hour')
-                        ->end()
+                    ->defaultValue('1 hour')
+                    ->end()
                     ->scalarNode('database_url')
-                        ->isRequired()
+                    ->isRequired()
+                    ->end()
+                    ->scalarNode('source_timezone')
+                    ->defaultValue('UTC')
                     ->end();
 
         return $treeBuilder;
