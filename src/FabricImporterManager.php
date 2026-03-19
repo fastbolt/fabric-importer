@@ -69,8 +69,7 @@ readonly class FabricImporterManager
             throw new InvalidArgumentException("Name of the import is required");
         }
 
-        $found      = false;
-        $definition = null;
+        $found = false;
         foreach ($this->definitions as $definition) {
             if ($type === $definition->getName()) {
                 $found = true;

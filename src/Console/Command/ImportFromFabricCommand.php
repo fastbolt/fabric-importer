@@ -69,7 +69,13 @@ class ImportFromFabricCommand extends Command
                 InputOption::VALUE_NONE,
                 'Request all data, regardless of the date of the last update'
             )
-            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Execute all import types, one after another.');
+            ->addOption('all', 'a', InputOption::VALUE_NONE, 'Execute all import types, one after another.')
+            ->addOption(
+                'with-dependencies',
+                'w',
+                InputOption::VALUE_NONE,
+                'Execute a single import, while including all dependencies.'
+            );
     }
 
     /**
@@ -150,13 +156,18 @@ class ImportFromFabricCommand extends Command
 
             return $this->showAvailableImportDefinitions($io);
         }
-        $isDev      = (bool)$input->getOption('dev');
-        $isFullSync = (bool)$input->getOption('full');
+        $isDev                 = (bool)$input->getOption('dev');
+        $isFullSync            = (bool)$input->getOption('full');
+        $includingDependencies = (bool)$input->getOption('with-dependencies');
 
         try {
-            $types = $isAllTypes
-                ? $this->dependencyManager->getNamesInDependencyAwareOrder()
-                : [$type];
+            if ($isAllTypes) {
+                $types = $this->dependencyManager->getNamesInDependencyAwareOrder();
+            } elseif ($includingDependencies) {
+                $types = $this->dependencyManager->getNamesInDependencyAwareOrder($type);
+            } else {
+                $types = [$type];
+            }
         } catch (CircularDependencyException $circularDependencyException) {
             $io->newLine();
             $io->error($circularDependencyException->getMessage());

@@ -3,6 +3,7 @@
 namespace Fastbolt\FabricImporter;
 
 use Fastbolt\FabricImporter\Exceptions\CircularDependencyException;
+use Fastbolt\FabricImporter\Exceptions\ImporterDefinitionNotFoundException;
 use Fastbolt\FabricImporter\ImporterDefinitions\FabricImporterDefinitionInterface;
 
 readonly class ImportDependencyManager
@@ -16,13 +17,20 @@ readonly class ImportDependencyManager
     }
 
     /**
+     * @param string|null $type Type to check dependencies for. If null, all importers are resolved.
+     *
      * @return string[]
      *
      * @throws CircularDependencyException
      */
-    public function getNamesInDependencyAwareOrder(): array
+    public function getNamesInDependencyAwareOrder(?string $type = null): array
     {
-        $dependencies = $this->getDependencies();
+        $dependencies = $type
+            ? $this->getDependenciesForType($type)
+            : $this->getDependencies();
+
+        // Deterministic order for input dependencies, to ease testing
+        ksort($dependencies);
 
         return $this->resolveDependencies($dependencies);
     }
@@ -37,9 +45,6 @@ readonly class ImportDependencyManager
         foreach ($this->definitions as $definition) {
             $result[$definition->getName()] = $definition->getImportDependencies();
         }
-
-        // Deterministic order for input dependencies, to ease testing
-        ksort($result);
 
         return $result;
     }
@@ -82,5 +87,46 @@ readonly class ImportDependencyManager
         }
 
         return $namesOrdered;
+    }
+
+    /**
+     * @param string $type Type to get dependencies for
+     *
+     * @return array<string, string[]> Array with definition names as keys and an array of the names of the definitions
+     *                       they depend on as values
+     */
+    private function getDependenciesForType(string $type, array &$dependencies = []): array
+    {
+        $definitionToCheck = $this->getDefinition($type);
+        if (null === $definitionToCheck) {
+            throw new ImporterDefinitionNotFoundException($type);
+        }
+
+        $dependencies[$type] = $dependenciesToCheck = $definitionToCheck->getImportDependencies();
+        foreach ($dependenciesToCheck as $dependency) {
+            if (isset($dependencies[$dependency])) {
+                continue;
+            }
+
+            $this->getDependenciesForType($dependency, $dependencies);
+        }
+
+        return $dependencies;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return FabricImporterDefinitionInterface|null
+     */
+    private function getDefinition(string $type): ?FabricImporterDefinitionInterface
+    {
+        /** @var array<FabricImporterDefinitionInterface> $definitionsFiltered */
+        $definitionsFiltered = array_filter(
+            iterator_to_array($this->definitions),
+            static fn(FabricImporterDefinitionInterface $definition): bool => $definition->getName() === $type
+        );
+
+        return array_pop($definitionsFiltered);
     }
 }
