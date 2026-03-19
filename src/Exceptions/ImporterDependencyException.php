@@ -21,7 +21,8 @@ class ImporterDependencyException extends Exception
     public function __construct(string $importerName, string $dependencyName, ?DateTimeInterface $lastImportedDate)
     {
         $lastImportedDate = $lastImportedDate?->format('Y-m-d H:i:s') ?? 'Never imported';
-        $message = "The importer-dependency for the importer $importerName has not been executed recently enough: $dependencyName: $lastImportedDate";
+        $message          = "The importer-dependency for the importer $importerName has not been executed recently enough: $dependencyName: $lastImportedDate\r\n";
+        $message          .= 'You can use `--with-dependencies` option to automatically execute the dependencies before executing the importer.';
 
         parent::__construct($message, 500);
     }

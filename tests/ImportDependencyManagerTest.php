@@ -17,13 +17,39 @@ class ImportDependencyManagerTest extends TestCase
             new GenericDummyImporterDefinition('material_groups', []),
             new GenericDummyImporterDefinition('order_items', ['orders', 'materials']),
             new GenericDummyImporterDefinition('materials', ['material_groups']),
+            new GenericDummyImporterDefinition('discounts', []),
         ];
 
         $dependencyManager = new ImportDependencyManager($definitions);
         $dependencies      = $dependencyManager->getNamesInDependencyAwareOrder();
 
         self::assertSame(
-            ['customers', 'material_groups', 'materials', 'orders', 'order_items'],
+            ['customers', 'discounts', 'material_groups', 'materials', 'orders', 'order_items'],
+            $dependencies
+        );
+    }
+
+    public function testGetNamesInDependencyAwareOrderSingleType(): void
+    {
+        $definitions = [
+            new GenericDummyImporterDefinition('customers', []),
+            new GenericDummyImporterDefinition('orders', ['customers', 'discounts']),
+            new GenericDummyImporterDefinition('material_groups', []),
+            new GenericDummyImporterDefinition('order_items', ['orders', 'materials']),
+            new GenericDummyImporterDefinition('materials', ['material_groups']),
+            new GenericDummyImporterDefinition('discounts', []),
+        ];
+
+        $dependencyManager = new ImportDependencyManager($definitions);
+        $dependencies      = $dependencyManager->getNamesInDependencyAwareOrder('orders');
+        self::assertSame(
+            ['customers', 'discounts', 'orders'],
+            $dependencies
+        );
+
+        $dependencies = $dependencyManager->getNamesInDependencyAwareOrder('order_items');
+        self::assertSame(
+            ['customers', 'discounts', 'material_groups', 'materials', 'orders', 'order_items'],
             $dependencies
         );
     }
